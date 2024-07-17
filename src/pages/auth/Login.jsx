@@ -36,13 +36,13 @@ const Login = () => {
     <div className="flex items-center justify-center bg-red-950 h-screen" style={{ backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/fondoLogin.jpg')",backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="items-center  md:mt-0  ">
         {/* Lado izquierdo con la imagen */}
-        <div className=" mx-5 md:mx-auto">
+        <div className="md:w-3/12 mx-5 md:mx-auto">
           <img className="object-cover w-full" src="logo.png" />
         </div>
 
         <ToastContainer />
         {/* Lado derecho con el formulario */}
-        <div className="  mt-2 mx-5 md:mx-auto flex items-center justify-center">
+        <div className="md:w-5/12   mt-2 mx-5 md:mx-auto flex items-center justify-center">
           <div className="md:w-8/12 w-full">
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
