@@ -1,0 +1,17 @@
+{
+    "name" : "IDFleet",
+    "sort_name": "IDFleet",
+    "start_url" : "/Frontend/src/pages/auth/Login.jsx",
+    "display" : "standalone",
+    "background_color" : "#1ABC9C",
+    "theme_color" : "#1ABC9C",
+    "orientation" : "portrait",
+    "icons" : [
+        {
+            "src": "/Frontend/public/logo.png",
+            "type": "image/png",
+            "sices" : "120x120"
+        }
+    ]
+
+}
