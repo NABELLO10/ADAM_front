@@ -37,7 +37,7 @@ const Login = () => {
       <div className="items-center  md:mt-0  ">
         {/* Lado izquierdo con la imagen */}
         <div className=" mx-5 md:mx-auto">
-          <img className="object-cover w-full" src="../../../public/logo.png" />
+          <img className="object-cover w-full" src="logo.png" />
         </div>
 
         <ToastContainer />
