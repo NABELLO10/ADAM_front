@@ -179,7 +179,7 @@ const Camiones = () => {
                       >
                         {transportistas.map((t) => (
                           <MenuItem key={t.id} value={t.id}>
-                            {t.nombre + " " + t.ape_paterno}
+                            {t.nombre + " " + t.ape_paterno + " " + t.ape_materno}
                           </MenuItem>
                         ))}
                       </Select>

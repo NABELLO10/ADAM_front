@@ -317,7 +317,7 @@ const TransportistasAlertas = () => {
                   >
                     <div>
                       <span className="font-semibold text-blue-950">
-                        {relacion.transportista.nombre}
+                        {relacion.transportista.nombre + " " + relacion.transportista.ape_paterno + " " + relacion.transportista.ape_materno}
                       </span>
                       <span className="text-blue-900 text-sm">
                         {relacion.alarmas.map((alerta, idx) => (
