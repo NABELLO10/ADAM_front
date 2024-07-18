@@ -1,6 +1,6 @@
 {
-    "name" : "IDFleet",
-    "sort_name": "IDFleet",
+    "name" : "ADAM",
+    "sort_name": "ADAM",
     "start_url" : "/Frontend/src/pages/auth/Login.jsx",
     "display" : "standalone",
     "background_color" : "#1ABC9C",
