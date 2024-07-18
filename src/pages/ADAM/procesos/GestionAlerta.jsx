@@ -63,7 +63,8 @@ const GestionAlerta = () => {
   const [ver, setVer] = useState(false);
   const [selectedTransportista, setSelectedTransportista] = useState();
   const [lastAlertDate, setLastAlertDate] = useState(null);
-
+  const [loadVideo, setLoadVideo] = useState(false);
+  
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(today.getDate());
@@ -744,6 +745,8 @@ try {
             width="100%"
             height="100%"
           ></iframe>
+
+          
         </DialogContent>
         <DialogActions>
           {!ver ? (
