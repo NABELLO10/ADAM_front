@@ -9,6 +9,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
+import CircularProgress from '@mui/material/CircularProgress';
 
 import {
   Chart as ChartJS,
@@ -64,7 +65,8 @@ const GestionAlerta = () => {
   const [selectedTransportista, setSelectedTransportista] = useState();
   const [lastAlertDate, setLastAlertDate] = useState(null);
   const [loadVideo, setLoadVideo] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false);
+
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(today.getDate());
@@ -199,42 +201,34 @@ const GestionAlerta = () => {
   };
 
   const obtenerAlarmasCeiba = async () => {
+    setIsLoading(true); // Inicia el spinner antes de la carga
     const token = localStorage.getItem("token_adam");
-    if (!token) return;
-  
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
     const config = {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     try {
       const { data } = await clienteAxios.get(
         `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
         config
       );
-/*   
-      if (data.length > 0) {
-        const latestAlert = data.reduce((max, alert) =>
-          new Date(alert.inicio) > new Date(max.inicio) ? alert : max,
-          data[0]
-        );
-  
-        if (!lastAlertDate || new Date(latestAlert.inicio) > new Date(lastAlertDate)) {        
-          showNotification('Se ha detectado una nueva alerta : ' + latestAlert.id_ceiba);
-          setLastAlertDate(latestAlert.inicio);
-        }
-      } */
- 
       setAlerts(data);
       filterAlerts(data, statusFilter, searchTerm, selectedTransportista);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false); // Detiene el spinner después de la carga
     }
   };
 
-  
   const showNotification = (message) => {
     if (Notification.permission === 'granted') {
       new Notification('Nueva Alerta', { body: message });
@@ -255,17 +249,13 @@ const GestionAlerta = () => {
 
   useEffect(() => {
     obtenerAlarmasCeiba();
-  
+
     const intervalId = setInterval(() => {
       obtenerAlarmasCeiba();
     }, 60000); // 60000 ms = 1 minuto
-  
+
     return () => clearInterval(intervalId); // Limpia el intervalo al desmontar el componente
   }, [startDateFilter, endDateFilter, statusFilter, searchTerm, selectedTransportista]);
-
-
-
-  
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -327,11 +317,9 @@ const GestionAlerta = () => {
     }
   };
 
-
   const limpiarFormulario = () => {
     setDetalleGestion("");
   };
-
 
   const filterAlerts = (alerts, status, term, transportista) => {
 
@@ -358,14 +346,12 @@ const GestionAlerta = () => {
     setFilteredAlerts(filtered);
   };
 
-
   useEffect(() => {
     obtenerEstados();
     obtenerTiposAlarma();
     cargarTransportistasUsuario(auth.id);
   }, []);
 
-  
   const handleFilter = (status) => {
     setStatusFilter(status);
     filterAlerts(alerts, status, searchTerm, selectedTransportista);
@@ -393,7 +379,6 @@ const GestionAlerta = () => {
 
   const handleTransportistaChange = (event, value) => {
     setSelectedTransportista(value);
-
 
     filterAlerts(alerts, statusFilter, searchTerm, value);
     setCurrentPage(1);
@@ -450,8 +435,8 @@ const GestionAlerta = () => {
   };
 
   const handleSendWhatsApp = async (contacto) => {
-try {
-    const token = localStorage.getItem("token_adam");
+    try {
+      const token = localStorage.getItem("token_adam");
       if (!token) return;
 
       const config = {
@@ -583,396 +568,387 @@ try {
 
   return (
     <div className="mx-auto relative">
-      <div className="flex justify-around mb-1">
-        {estados.map((status) => (
-          <div
-            key={status.id}
-            className={`flex-1 p-4 m-2 text-center cursor-pointer rounded-lg shadow-xl ${
-              statusFilter.id == status.id ? "bg-blue-200" : "bg-white"
-            } hover:opacity-75`}
-            onClick={() => handleFilter(status)}
-          >
-            <h2 className="text-xl">{status.nom_kpi}</h2>
-            <h3 className="text-3xl font-bold">
-              {alerts.filter((alert) => alert.estado == status.id).length}
-            </h3>
+      {isLoading ? (
+        <div className="flex justify-center items-center h-screen">
+          <CircularProgress />
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-around mb-1">
+            {estados.map((status) => (
+              <div
+                key={status.id}
+                className={`flex-1 p-4 m-2 text-center cursor-pointer rounded-lg shadow-xl ${
+                  statusFilter.id == status.id ? "bg-blue-200" : "bg-white"
+                } hover:opacity-75`}
+                onClick={() => handleFilter(status)}
+              >
+                <h2 className="text-xl">{status.nom_kpi}</h2>
+                <h3 className="text-3xl font-bold">
+                  {alerts.filter((alert) => alert.estado == status.id).length}
+                </h3>
+              </div>
+            ))}
+            <div
+              className={`flex-1 p-4 m-2 text-center shadow-xl cursor-pointer rounded-lg ${
+                statusFilter === "Todas"
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-400 text-black"
+              } hover:opacity-75`}
+              onClick={() => handleFilter("Todas")}
+            >
+              <h2 className="text-xl">Todas</h2>
+              <h3 className="text-3xl font-bold">{alerts.length}</h3>
+            </div>
           </div>
-        ))}
-        <div
-          className={`flex-1 p-4 m-2 text-center shadow-xl cursor-pointer rounded-lg ${
-            statusFilter === "Todas"
-              ? "bg-gray-800 text-white"
-              : "bg-gray-400 text-black"
-          } hover:opacity-75`}
-          onClick={() => handleFilter("Todas")}
-        >
-          <h2 className="text-xl">Todas</h2>
-          <h3 className="text-3xl font-bold">{alerts.length}</h3>
-        </div>
-      </div>
-      <div className="flex mb-2 space-x-4">
-        <div className="w-5/12 bg-white">
-          <Autocomplete
-            options={transportistasUsuarios}
-            getOptionLabel={(option) => option.label}
-            value={selectedTransportista}
-            className="bg-white"
-            onChange={handleTransportistaChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Filtrar por Transportista" variant="outlined" />
-            )}
-          />
-        </div>      
-        <input
-          type="text"
-          placeholder="Buscar unidad..."
-          className="p-2 border rounded"
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <div className="flex space-x-4">
-          <input
-            type="date"
-            className="p-2 border rounded"
-            value={startDateFilter}
-            onChange={handleStartDateChange}
-          />
-          <input
-            type="date"
-            className="p-2 border rounded"
-            value={endDateFilter}
-            onChange={handleEndDateChange}
-          />
-        </div>
-        <div>
-          <button
-            className="bg-green-700 hover:bg-green-900 text-white font-bold py-2 mt-1 px-2 rounded"
-            onClick={handleExportToExcel}
-          >
-            <FileDownloadTwoToneIcon />
-          </button>
-        </div>
-      </div>
-      
-      <div className="mb-0">
-        <div className="w-12/12 overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg shadow-xl text-sm">
-            <thead className="bg-red-700 text-white">
-              <tr>
-                <th className="py-2 px-4">Alarma</th>
-                <th className="py-2 px-4">Unidad</th>
-                <th className="py-2 px-4">Transportista</th>
-                <th className="py-2 px-4">Fecha Alerta</th>
-                <th className="py-2 px-4">Estado</th>
-                <th className="py-2 px-4"></th>
-              </tr>
-            </thead>
-            <tbody className="text-center">
-              {paginatedAlerts.map((alert) => (
-                <tr key={alert.id} className="hover:bg-gray-200">
-                  <td className="py-2 px-4 font-bold">
-                    <span>
-                      {alert.id_ceiba + " | " + alert.nom_tipo_alarma}
-                    </span>
-                  </td>
-                  <td className="py-2 px-4">{alert.unidad}</td>
-                  <td className="py-2 px-4">{alert.transportista_nombre}</td>
-                  <td className="py-2 px-4">{alert.inicio}</td>
-                  <td className="py-2 px-4 font-semibold">
-                    <span>
-                      {estados.find((status) => status.id == alert.estado)
-                        ?.nom_kpi || alert.estado}
-                    </span>
-                  </td>
-
-              
-
-                  <td className="space-x-2 text-center">
-                    {alert.estado == 8 && (
-                      <button
-                        className="bg-red-950 hover:bg-red-900 text-white font-semibold py-2 px-4 rounded"
-                        onClick={() => {
-                          openModal(alert);
-                        }}
-                      >
-                        Gestionar
-                      </button>
-                    )}
-                    {(alert.estado == 9 || alert.estado == 10) && (
-                      <button
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-                        onClick={() => {
-                          openViewModal(alert);
-                        }}
-                      >
-                        Ver
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-center mt-4">
-            <Pagination
-              count={totalPages}
-              page={currentPage}
-              onChange={handlePageChange}
-              variant="outlined"
-              shape="rounded"
+          <div className="flex mb-2 space-x-4">
+            <div className="w-5/12 bg-white">
+              <Autocomplete
+                options={transportistasUsuarios}
+                getOptionLabel={(option) => option.label}
+                value={selectedTransportista}
+                className="bg-white"
+                onChange={handleTransportistaChange}
+                renderInput={(params) => (
+                  <TextField {...params} label="Filtrar por Transportista" variant="outlined" />
+                )}
+              />
+            </div>      
+            <input
+              type="text"
+              placeholder="Buscar unidad..."
+              className="p-2 border rounded"
+              value={searchTerm}
+              onChange={handleSearch}
             />
+            <div className="flex space-x-4">
+              <input
+                type="date"
+                className="p-2 border rounded"
+                value={startDateFilter}
+                onChange={handleStartDateChange}
+              />
+              <input
+                type="date"
+                className="p-2 border rounded"
+                value={endDateFilter}
+                onChange={handleEndDateChange}
+              />
+            </div>
+            <div>
+              <button
+                className="bg-green-700 hover:bg-green-900 text-white font-bold py-2 mt-1 px-2 rounded"
+                onClick={handleExportToExcel}
+              >
+                <FileDownloadTwoToneIcon />
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+          
+          <div className="mb-0">
+            <div className="w-12/12 overflow-x-auto">
+              <table className="min-w-full bg-white rounded-lg shadow-xl text-sm">
+                <thead className="bg-red-700 text-white">
+                  <tr>
+                    <th className="py-2 px-4">Alarma</th>
+                    <th className="py-2 px-4">Unidad</th>
+                    <th className="py-2 px-4">Transportista</th>
+                    <th className="py-2 px-4">Fecha Alerta</th>
+                    <th className="py-2 px-4">Estado</th>
+                    <th className="py-2 px-4"></th>
+                  </tr>
+                </thead>
+                <tbody className="text-center">
+                  {paginatedAlerts.map((alert) => (
+                    <tr key={alert.id} className="hover:bg-gray-200">
+                      <td className="py-2 px-4 font-bold">
+                        <span>
+                          {alert.id_ceiba + " | " + alert.nom_tipo_alarma}
+                        </span>
+                      </td>
+                      <td className="py-2 px-4">{alert.unidad}</td>
+                      <td className="py-2 px-4">{alert.transportista_nombre}</td>
+                      <td className="py-2 px-4">{alert.inicio}</td>
+                      <td className="py-2 px-4 font-semibold">
+                        <span>
+                          {estados.find((status) => status.id == alert.estado)
+                            ?.nom_kpi || alert.estado}
+                        </span>
+                      </td>
+                      <td className="space-x-2 text-center">
+                        {alert.estado == 8 && (
+                          <button
+                            className="bg-red-950 hover:bg-red-900 text-white font-semibold py-2 px-4 rounded"
+                            onClick={() => {
+                              openModal(alert);
+                            }}
+                          >
+                            Gestionar
+                          </button>
+                        )}
+                        {(alert.estado == 9 || alert.estado == 10) && (
+                          <button
+                            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                            onClick={() => {
+                              openViewModal(alert);
+                            }}
+                          >
+                            Ver
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="flex justify-center mt-4">
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handlePageChange}
+                  variant="outlined"
+                  shape="rounded"
+                />
+              </div>
+            </div>
+          </div>
 
-      <Dialog
-        fullWidth={true}
-        maxWidth={"2xl"}
-        PaperProps={{
-          style: {
-            height: "33vh", // Ajusta la altura según tus necesidades
-          },
-        }}
-        open={modalIsOpen}
-        onClose={closeModal}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogContent>
-     {/*      <iframe
-            src={selectedUrl.url_evidencia}
-            title="Evidencia"
-            width="100%"
-            height="100%"
-          ></iframe> */}
-<div className="text-center font-bold bg-red-800 p-2 text-white hover:bg-red-700 cursor-pointer">
-<a href={selectedUrl.url_evidencia} target="_blank" >Ver Evidencia</a>
-     
-</div>
-     
+          <Dialog
+            fullWidth={true}
+            maxWidth={"2xl"}
+            PaperProps={{
+              style: {
+                height: "33vh", // Ajusta la altura según tus necesidades
+              },
+            }}
+            open={modalIsOpen}
+            onClose={closeModal}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogContent>
+              <div className="text-center font-bold bg-red-800 p-2 text-white hover:bg-red-700 cursor-pointer">
+                <a href={selectedUrl.url_evidencia} target="_blank" >Ver Evidencia</a>
+              </div>
+            </DialogContent>
+            <DialogActions>
+              {!ver ? (
+                <div className="bg-gray-300 py-2 px-10 w-full">
+                  <div className="justify-center flex">
+                    <div className="gap-10 flex mb-2 items-center">
+                      <span className="text-red-900 font font-semibold">
+                        ID:{" "}
+                        <span className="text-red-500">{selectedUrl.id_ceiba}</span>{" "}
+                      </span>
+                      <span className="text-red-900 font font-semibold">
+                        Alerta:{" "}
+                        <span className="text-red-500">
+                          {selectedUrl.nom_tipo_alarma}
+                        </span>{" "}
+                      </span>
+                      <span className="text-red-900 font font-semibold">
+                        Unidad:{" "}
+                        <span className="text-red-500">{selectedUrl.unidad}</span>{" "}
+                      </span>
+                      <span className="text-red-900 font font-semibold">
+                        Fecha:{" "}
+                        <span className="text-red-500">{selectedUrl.inicio}</span>{" "}
+                      </span>
+                      <span className="text-red-900 font">
+                        <textarea
+                          onChange={(e) => setDetalleGestion(e.target.value)}
+                          className="w-80 flex items-center rounded-lg  text-md px-2  text-gray-500 bg-white"
+                          placeholder="Detalle gestión..."
+                        ></textarea>
+                      </span>
+                      <span className="text-red-900 font font-semibold">
+                        {!gestionada && (
+                          <div className="flex gap-2 justify-center">
+                            <button
+                              onClick={() => gestionarAlerta(9)}
+                              className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+                            >
+                              <ThumbUpAltTwoToneIcon />
+                            </button>
+                            <button
+                              onClick={() => gestionarAlerta(10)}
+                              className="bg-red-800 text-white p-2 rounded hover:bg-red-700"
+                            >
+                              <ThumbDownTwoToneIcon />
+                            </button>
+                          </div>
+                        )}
+                      </span>
+                    </div>
+                  </div>
 
-        </DialogContent>
-        <DialogActions>
-          {!ver ? (
-            <div className="bg-gray-300 py-2 px-10 w-full">
-              <div className="justify-center flex">
-                <div className="gap-10 flex mb-2 items-center">
-                  <span className="text-red-900 font font-semibold">
-                    ID:{" "}
-                    <span className="text-red-500">{selectedUrl.id_ceiba}</span>{" "}
-                  </span>
+                  {contactos.length > 0 ? (
+                    <div>
+                      <table className="min-w-full bg-white rounded-lg shadow-md text-sm">
+                        <thead className="bg-red-900 text-white">
+                          <tr>
+                            <th className="py-1 px-4">Nombre Contacto</th>
+                            <th className="py-1 px-4">Fono</th>
+                            <th className="py-1 px-4">Email</th>
+                            <th className="py-1 px-4"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {contactos.map((contacto) => (
+                            <tr
+                              key={contacto.id}
+                              className="hover:bg-gray-300 bg-white text-gray-800 font-semibold"
+                            >
+                              <td className=" px-4">{contacto.nom_contacto}</td>
+                              <td className=" px-4">{contacto.fono}</td>
+                              <td className=" px-4">{contacto.mail}</td>
 
-                  <span className="text-red-900 font font-semibold">
-                    Alerta:{" "}
-                    <span className="text-red-500">
-                      {selectedUrl.nom_tipo_alarma}
-                    </span>{" "}
-                  </span>
-                  <span className="text-red-900 font font-semibold">
-                    Unidad:{" "}
-                    <span className="text-red-500">{selectedUrl.unidad}</span>{" "}
-                  </span>
-                  <span className="text-red-900 font font-semibold">
-                    Fecha:{" "}
-                    <span className="text-red-500">{selectedUrl.inicio}</span>{" "}
-                  </span>
-                  <span className="text-red-900 font">
-                    <textarea
-                      onChange={(e) => setDetalleGestion(e.target.value)}
-                      className="w-80 flex items-center rounded-lg  text-md px-2  text-gray-500 bg-white"
-                      placeholder="Detalle gestión..."
-                    ></textarea>
-                  </span>
-                  <span className="text-red-900 font font-semibold">
-                    {!gestionada && (
-                      <div className="flex gap-2 justify-center">
+                              <td className=" px-4 p-1 text-center">
+                                {gestionada && (
+                                  <div className="flex gap-2 justify-center">
+                                    <button
+                                      className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+                                      onClick={() => handleSendWhatsApp(contacto)}
+                                    >
+                                      <WhatsAppIcon />
+                                    </button>
+                                    <button
+                                      className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+                                      onClick={() => handleSendEmail(contacto)}
+                                    >
+                                      <EmailIcon />
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <span className="flex justify-center items-end mt-2 text-gray-800 font-bold">
+                      Sin Contactos Registrados
+                    </span>
+                  )}
+
+                  <div>
+                    <div className="flex justify-end mt-2 gap-2 items-start">
+                      <div className="flex gap-2">
                         <button
-                          onClick={() => gestionarAlerta(9)}
-                          className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
+                          onClick={closeModal}
+                          className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
                         >
-                          <ThumbUpAltTwoToneIcon />
-                        </button>
-                        <button
-                          onClick={() => gestionarAlerta(10)}
-                          className="bg-red-800 text-white p-2 rounded hover:bg-red-700"
-                        >
-                          <ThumbDownTwoToneIcon />
+                          Cerrar
                         </button>
                       </div>
-                    )}
-                  </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : gestiones.length > 0 ? (
+                <div className=" text-xs text-center justify-center w-full mx-2 mb-2">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full bg-gray-100 border border-gray-200 ">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4 border-b">ID</th>
+                          <th className="py-2 px-4 border-b">ID Estado</th>
+                          <th className="py-2 px-4 border-b">Usuario Gestión</th>
+                          <th className="py-2 px-4 border-b">Detalle</th>
+                          <th className="py-2 px-4 border-b">Nombre Contacto</th>
+                          <th className="py-2 px-4 border-b">Fono Contacto</th>
+                          <th className="py-2 px-4 border-b">Mail Contacto</th>
 
-              {contactos.length > 0 ? (
-                <div>
-                  <table className="min-w-full bg-white rounded-lg shadow-md text-sm">
-                    <thead className="bg-red-900 text-white">
-                      <tr>
-                        <th className="py-1 px-4">Nombre Contacto</th>
-                        <th className="py-1 px-4">Fono</th>
-                        <th className="py-1 px-4">Email</th>
-                        <th className="py-1 px-4"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {contactos.map((contacto) => (
-                        <tr
-                          key={contacto.id}
-                          className="hover:bg-gray-300 bg-white text-gray-800 font-semibold"
-                        >
-                          <td className=" px-4">{contacto.nom_contacto}</td>
-                          <td className=" px-4">{contacto.fono}</td>
-                          <td className=" px-4">{contacto.mail}</td>
-
-                          <td className=" px-4 p-1 text-center">
-                            {gestionada && (
-                              <div className="flex gap-2 justify-center">
-                                <button
-                                  className="bg-green-600 text-white p-2 rounded hover:bg-green-700"
-                                  onClick={() => handleSendWhatsApp(contacto)}
-                                >
-                                  <WhatsAppIcon />
-                                </button>
-                                <button
-                                  className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-                                  onClick={() => handleSendEmail(contacto)}
-                                >
-                                  <EmailIcon />
-                                </button>
-                              </div>
-                            )}
-                          </td>
+                          <th className="py-2 px-4 border-b">Tipo Notificación</th>
+                          <th className="py-2 px-4 border-b">Fecha Registro</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {gestiones.map((item) => (
+                          <tr key={item.id} className="hover:bg-gray-200">
+                            <td className="py-2 px-4 border-b">
+                              {item.id_alarma_ceiba}
+                            </td>
+                            <td className="py-2 px-4 border-b">
+                              {item.id_estado == 9 ? "Gestionada" : "No Gestionada"}
+                            </td>
+                            <td className="py-2 px-4 border-b">
+                              {item.usr_gestion}
+                            </td>
+                            <td className="py-2 px-4 border-b">{item.detalle}</td>
+                            <td className="py-2 px-4 border-b">
+                              {item.nom_contacto}
+                            </td>
+                            <td className="py-2 px-4 border-b">
+                              {item.fono_contacto}
+                            </td>
+                            <td className="py-2 px-4 border-b">
+                              {item.mail_contacto}
+                            </td>
+
+                            <td className="py-2 px-4 border-b">
+                              {item.tipo_notificacion}
+                            </td>
+                            <td className="py-2 px-4 border-b">
+                              {new Date(item.createdAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-end mt-2 gap-2 items-start">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={closeModal}
+                          className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
+                        >
+                          Cerrar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
-                <span className="flex justify-center items-end mt-2 text-gray-800 font-bold">
-                  Sin Contactos Registrados
-                </span>
+                <div className="w-full">
+                  <div className="w-full text-center font-semibold my-5">
+                    <span className=" text-red-700">Sin Gestiones</span>
+                  </div>
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={closeModal}
+                      className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
               )}
+            </DialogActions>
+          </Dialog>
 
-              <div>
-                <div className="flex justify-end mt-2 gap-2 items-start">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={closeModal}
-                      className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
-                    >
-                      Cerrar
-                    </button>
-                  </div>
-                </div>
+          <div className="container mx-auto px-4 py-4">
+            <div className="gap-4">
+              <div className="w-12/12 h-56 mb-20">
+                <h2 className="text-lg font-bold mb-4">Top 10 alarmas</h2>
+                <Bar
+                  data={rankingChartData}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
+              </div>
+              <div className="w-12/12 h-96">
+                <h2 className="text-lg font-bold mb-4">Total alarmas por tipo</h2>
+                <Bar
+                  data={barChartData}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
               </div>
             </div>
-
-
-          ) : gestiones.length > 0 ? (
-            <div className=" text-xs text-center justify-center w-full mx-2 mb-2">
-              <div className="overflow-x-auto">
-                <table className="min-w-full bg-gray-100 border border-gray-200 ">
-                  <thead>
-                    <tr>
-                      <th className="py-2 px-4 border-b">ID</th>
-                      <th className="py-2 px-4 border-b">ID Estado</th>
-                      <th className="py-2 px-4 border-b">Usuario Gestión</th>
-                      <th className="py-2 px-4 border-b">Detalle</th>
-                      <th className="py-2 px-4 border-b">Nombre Contacto</th>
-                      <th className="py-2 px-4 border-b">Fono Contacto</th>
-                      <th className="py-2 px-4 border-b">Mail Contacto</th>
-
-                      <th className="py-2 px-4 border-b">Tipo Notificación</th>
-                      <th className="py-2 px-4 border-b">Fecha Registro</th>
-                      
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {gestiones.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-200">
-                        <td className="py-2 px-4 border-b">
-                          {item.id_alarma_ceiba}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {item.id_estado == 9 ? "Gestionada" : "No Gestionada"}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {item.usr_gestion}
-                        </td>
-                        <td className="py-2 px-4 border-b">{item.detalle}</td>
-                        <td className="py-2 px-4 border-b">
-                          {item.nom_contacto}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {item.fono_contacto}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {item.mail_contacto}
-                        </td>
-
-                        <td className="py-2 px-4 border-b">
-                          {item.tipo_notificacion}
-                        </td>
-                        <td className="py-2 px-4 border-b">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </td>
-                      
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div>
-                <div className="flex justify-end mt-2 gap-2 items-start">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={closeModal}
-                      className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
-                    >
-                      Cerrar
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full">
-              <div className="w-full text-center font-semibold my-5">
-                <span className=" text-red-700">Sin Gestiones</span>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  onClick={closeModal}
-                  className="inline-block px-6 py-2.5 bg-gray-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-700 hover:shadow-lg focus:bg-gray-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-gray-500 active:shadow-lg transition duration-150 ease-in-out"
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          )}
-        </DialogActions>
-      </Dialog>
-
-      <div className="container mx-auto px-4 py-4">
-        <div className="gap-4">
-          <div className="w-12/12 h-56 mb-20">
-            <h2 className="text-lg font-bold mb-4">Top 10 alarmas</h2>
-            <Bar
-              data={rankingChartData}
-              options={{ responsive: true, maintainAspectRatio: false }}
-            />
           </div>
-          <div className="w-12/12 h-96">
-            <h2 className="text-lg font-bold mb-4">Total alarmas por tipo</h2>
-            <Bar
-              data={barChartData}
-              options={{ responsive: true, maintainAspectRatio: false }}
-            />
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };
