@@ -61,7 +61,7 @@ const NuevoPassword = () => {
       <div className="items-center  md:mt-0  ">
         {/* Lado izquierdo con la imagen */}
         <div className="md:w-3/12 mx-5 md:mx-auto">
-          <img className="object-cover w-full" src="logo.png" />
+          <img className="object-cover w-full" src="/logo.png" />
         </div>
 
  <ToastContainer />
