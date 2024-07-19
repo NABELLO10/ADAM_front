@@ -730,7 +730,7 @@ try {
         maxWidth={"2xl"}
         PaperProps={{
           style: {
-            height: "90vh", // Ajusta la altura según tus necesidades
+            height: "33vh", // Ajusta la altura según tus necesidades
           },
         }}
         open={modalIsOpen}
@@ -739,14 +739,18 @@ try {
         aria-describedby="alert-dialog-description"
       >
         <DialogContent>
-          <iframe
+     {/*      <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe>
+          ></iframe> */}
+<div className="text-center font-bold bg-red-800 p-2 text-white hover:bg-red-700 cursor-pointer">
+<a href={selectedUrl.url_evidencia} target="_blank" >Ver Evidencia</a>
+     
+</div>
+     
 
-          
         </DialogContent>
         <DialogActions>
           {!ver ? (
