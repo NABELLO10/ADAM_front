@@ -10,6 +10,7 @@ import DialogContent from "@mui/material/DialogContent";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
 
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -739,18 +740,17 @@ try {
         aria-describedby="alert-dialog-description"
       >
         <DialogContent>
-     {/*      <iframe
+         <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe> */}
+          ></iframe> 
 <div className="text-center font-bold bg-red-800 p-2 text-white hover:bg-red-700 cursor-pointer">
 <a href={selectedUrl.url_evidencia} target="_blank" >Ver Evidencia</a>
      
 </div>
      
-
         </DialogContent>
         <DialogActions>
           {!ver ? (
