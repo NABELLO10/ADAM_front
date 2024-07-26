@@ -584,7 +584,8 @@ try {
 
   return (
     <div className="mx-auto relative">
-      <div className="flex justify-around mb-1">
+      
+      <div className="flex justify-around items-center mb-1">
         {estados.map((status) => (
           <div
             key={status.id}
@@ -655,7 +656,7 @@ try {
         </div>
       </div>
       
-      <div className="mb-0">
+      <div className="mb-0 bg-red">
         <div className="w-12/12 overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow-xl text-sm">
             <thead className="bg-red-700 text-white">
@@ -728,34 +729,30 @@ try {
 
       <Dialog
         fullWidth={true}
-        maxWidth={"2xl"}
-        PaperProps={{
+        maxWidth={"xl"}
+       /*  PaperProps={{
           style: {
-            height: "33vh", // Ajusta la altura según tus necesidades
+            height: "10vh", // Ajusta la altura según tus necesidades
           },
-        }}
+        }} */
         open={modalIsOpen}
         onClose={closeModal}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
         <DialogContent>
-         <iframe
+       {/*   <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe> 
-<div className="text-center font-bold bg-red-800 p-2 text-white hover:bg-red-700 cursor-pointer">
-<a href={selectedUrl.url_evidencia} target="_blank" >Ver Evidencia</a>
-     
-</div>
+          ></iframe>  */}
      
         </DialogContent>
         <DialogActions>
           {!ver ? (
-            <div className="bg-gray-300 py-2 px-10 w-full">
-              <div className="justify-center flex">
+            <div className="bg-gray-300 w-full">
+              <div className="justify-center flex p-3">
                 <div className="gap-10 flex mb-2 items-center">
                   <span className="text-red-900 font font-semibold">
                     ID:{" "}
@@ -801,12 +798,15 @@ try {
                       </div>
                     )}
                   </span>
+                  <a href={selectedUrl.url_evidencia} className="bg-blue-700 text-white p-2 rounded-md hover:bg-blue-600" target="_blank" >Ver Evidencia</a>
+     
+
                 </div>
               </div>
 
               {contactos.length > 0 ? (
                 <div>
-                  <table className="min-w-full bg-white rounded-lg shadow-md text-sm">
+                  <table className="min-w-full bg-white  rounded-lg shadow-md text-sm">
                     <thead className="bg-red-900 text-white">
                       <tr>
                         <th className="py-1 px-4">Nombre Contacto</th>
@@ -855,7 +855,7 @@ try {
               )}
 
               <div>
-                <div className="flex justify-end mt-2 gap-2 items-start">
+                <div className="flex justify-end mt-10 p-3 gap-2 items-start">
                   <div className="flex gap-2">
                     <button
                       onClick={closeModal}
@@ -938,9 +938,16 @@ try {
               </div>
             </div>
           ) : (
-            <div className="w-full">
+            <div className="w-full text-center">
+              
+          
+<a href={selectedUrl.url_evidencia} className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600" target="_blank" >Ver Evidencia</a>
+     
+
+
               <div className="w-full text-center font-semibold my-5">
                 <span className=" text-red-700">Sin Gestiones</span>
+                
               </div>
               <div className="flex gap-2 justify-end">
                 <button
