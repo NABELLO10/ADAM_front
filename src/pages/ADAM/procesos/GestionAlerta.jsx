@@ -741,12 +741,12 @@ try {
         aria-describedby="alert-dialog-description"
       >
         <DialogContent>
-       {/*   <iframe
+         <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe>  */}
+          ></iframe>  
      
         </DialogContent>
         <DialogActions>
