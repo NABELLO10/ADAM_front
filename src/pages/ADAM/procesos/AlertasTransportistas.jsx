@@ -189,8 +189,6 @@ const TransportistasAlertas = () => {
       }))
     );
 
-    console.log(alarmasAsociadas)
-
     setSelectedAlertas(alarmasAsociadas);
   };
 
@@ -222,8 +220,7 @@ const TransportistasAlertas = () => {
         label: alerta.label,
       }));
 
-      console.log(alertasData)
-  
+      
       const { data } = await clienteAxios.post(
         "/general/registrarTransportistaAlerta",
         {

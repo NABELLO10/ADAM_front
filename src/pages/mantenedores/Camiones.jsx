@@ -159,6 +159,7 @@ const Camiones = () => {
             <TableHead>
               <TableRow>
                 <StickyTableCell>Patente</StickyTableCell>
+                <StickyTableCell>Device ID</StickyTableCell>
                 <StickyTableCell>Transportista</StickyTableCell>
                 <StickyTableCell>Rev. Técnica</StickyTableCell>
                 <StickyTableCell>Permiso Circulación</StickyTableCell>
@@ -170,6 +171,7 @@ const Camiones = () => {
               {filtered.map((camion) => (
                 <TableRow key={camion.id} className="hover:bg-gray-200 text-sm">
                   <TableCell>{camion.nom_patente}</TableCell>
+                  <TableCell>{camion.device_id}</TableCell>
                   <TableCell>
                     <FormControl fullWidth>
                       <InputLabel>Transportista</InputLabel>

@@ -9,6 +9,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
+import moment from 'moment';
 
 
 import {
@@ -336,7 +337,6 @@ const GestionAlerta = () => {
 
   const filterAlerts = (alerts, status, term, transportista) => {
 
-    console.log(alerts)
 
     let filtered = alerts;
 
@@ -563,9 +563,10 @@ try {
   const handleExportToExcel = () => {
     // Crear un array que contenga sólo la información necesaria para el Excel
     const dataForExcel = filteredAlerts.map((alert) => ({
+      Id: alert.id_ceiba,
       Alarma: alert.nom_tipo_alarma,
       Unidad: alert.unidad,
-      "Fecha Alerta": alert.inicio,
+      "Fecha Alerta":   moment(alert.inicio).format("DD-MM-YYYY HH:mm:ss"),
       Estado:
         estados.find((status) => status.id == alert.estado)?.nombre_estado ||
         alert.estado,
@@ -581,6 +582,11 @@ try {
     // Escribir el archivo y ofrecerlo para descargar
     XLSX.writeFile(wb, "Reporte_de_Alertas.xlsx");
   };
+
+  function formatearFecha(fecha) {
+    const [year, month, day, hora, min, seg] = fecha.split("-");
+    return `${day}-${month}-${year} ${hora}:${min}:${seg}`;
+  }
 
   return (
     <div className="mx-auto relative">
@@ -679,7 +685,7 @@ try {
                   </td>
                   <td className="py-2 px-4">{alert.unidad}</td>
                   <td className="py-2 px-4">{alert.transportista_nombre}</td>
-                  <td className="py-2 px-4">{alert.inicio}</td>
+                  <td className="py-2 px-4">   {moment(alert.inicio).format("DD-MM-YYYY HH:mm:ss")}</td>
                   <td className="py-2 px-4 font-semibold">
                     <span>
                       {estados.find((status) => status.id == alert.estado)

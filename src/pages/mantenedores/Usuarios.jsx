@@ -165,6 +165,8 @@ const Usuarios = () => {
         value: t.id,
         label: t.mae_transportista.nombre + " " + t.mae_transportista.ape_paterno + " " + t.mae_transportista.ape_materno
       }));
+
+      console.log(data)
       setTransportistasSeleccionados(transportistasAsociados);
     } catch (error) {
       console.error('Error cargando transportistas del usuario:', error);
@@ -284,31 +286,7 @@ const Usuarios = () => {
       <div className="grid-cols-2 lg:flex mt-4">
         <div className="shadow-lg  mx-6 lg:mx-auto lg:w-5/12 px-8 py-5 rounded-xl bg-white">
           <form onSubmit={handleSubmit}>
-            {auth.id == 2 && (
-              <div className="">
-                <label
-                  htmlFor="empresa"
-                  className="peer-placeholder-shown:uppercase absolute left-0 -top-3.5 text-gray-900 text-sm
-                                peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-500 transition-all peer-placeholder-shown:top-3"
-                ></label>
-
-                <select
-                  name="empresa"
-                  value={id_empresa}
-                  className={`mt-2 w-full p-2 bg-gray-50 border uppercase border-gray-300 rounded-lg text-center text font-bold text-gray-500 `}
-                  onChange={(e) => setEmpresa(+e.target.value)}
-                >
-                  <option value={""} disabled hidden>
-                    Seleccionar...
-                  </option>
-                  {empresasListado.map((empresa) => (
-                    <option key={empresa.id} value={empresa.id}>
-                      {empresa.nom_empresa}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
+           
 
             <div className="py-3 relative">
               <TextField
