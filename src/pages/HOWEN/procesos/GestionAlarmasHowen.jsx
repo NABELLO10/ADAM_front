@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { msgError, msgInfo, msgOk, msgWarning } from "../../../components/Alertas";
+import {
+  msgError,
+  msgInfo,
+  msgOk,
+  msgWarning,
+} from "../../../components/Alertas";
 import clienteAxios from "../../../config/axios";
 import useAuth from "../../../hooks/useAuth";
 import { TextField, Chip, Autocomplete } from "@mui/material";
@@ -9,8 +14,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailIcon from "@mui/icons-material/Email";
-import moment from 'moment';
-
+import moment from "moment";
 
 import {
   Chart as ChartJS,
@@ -33,7 +37,7 @@ import FileDownloadTwoToneIcon from "@mui/icons-material/FileDownloadTwoTone";
 import ThumbUpAltTwoToneIcon from "@mui/icons-material/ThumbUpAltTwoTone";
 import ThumbDownTwoToneIcon from "@mui/icons-material/ThumbDownTwoTone";
 
-const itemsPerPage = 10;
+const itemsPerPage = 7;
 
 ChartJS.register(
   CategoryScale,
@@ -44,7 +48,7 @@ ChartJS.register(
   Legend
 );
 
-const GestionAlerta = () => {
+const GestionAlarmasHowen = () => {
   const { auth } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
@@ -53,6 +57,7 @@ const GestionAlerta = () => {
   const [contactos, setContactos] = useState([]);
   const [detalleGestion, setDetalleGestion] = useState("");
   const [estadoGestion, setEstadoGEstion] = useState("");
+  const [urlEvidencia, setUrlEvidencia] = useState("");
   const [gestionada, setGestionada] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Todas");
   const [estados, setEstados] = useState([]);
@@ -66,7 +71,7 @@ const GestionAlerta = () => {
   const [selectedTransportista, setSelectedTransportista] = useState();
   const [lastAlertDate, setLastAlertDate] = useState(null);
   const [loadVideo, setLoadVideo] = useState(false);
-  
+
   const today = new Date();
   const startDate = new Date(today);
   startDate.setDate(today.getDate());
@@ -77,10 +82,12 @@ const GestionAlerta = () => {
     today.toISOString().split("T")[0]
   );
 
-  const openModal = (url) => {
+  const openModal = (url) => {    
     setVer(false);
+
     setSelectedUrl(url);
-    obtenerInfoUnidad(url.serie);
+    obtenerEvidencia(url.guid)
+    //obtenerInfoUnidad(url.serie);
     setModalIsOpen(true);
     limpiarFormulario();
     setEstadoGEstion("");
@@ -112,15 +119,23 @@ const GestionAlerta = () => {
     };
 
     try {
-      const { data } = await clienteAxios.get(`/general/usuarios_transportistas/${usuarioId}`, config);
+      const { data } = await clienteAxios.get(
+        `/general/usuarios_transportistas/${usuarioId}`,
+        config
+      );
       // Asumiendo que la API devuelve un array de transportistas con estructura { id, nombre }
-      const transportistasAsociados = data.map(t => ({
+      const transportistasAsociados = data.map((t) => ({
         value: t.id_transportista,
-        label: t.mae_transportista.nombre + " " + t.mae_transportista.ape_paterno + " " + t.mae_transportista.ape_materno
+        label:
+          t.mae_transportista.nombre +
+          " " +
+          t.mae_transportista.ape_paterno +
+          " " +
+          t.mae_transportista.ape_materno,
       }));
       setTransportistasUsuarios([...transportistasAsociados]);
     } catch (error) {
-      console.error('Error cargando transportistas del usuario:', error);
+      console.error("Error cargando transportistas del usuario:", error);
     }
   };
 
@@ -135,7 +150,10 @@ const GestionAlerta = () => {
       },
     };
 
-    const { data } = await clienteAxios.get(`/general/infoUnidad/${id}`, config);
+    const { data } = await clienteAxios.get(
+      `/general/obtenerInfoUnidadHOWEN/${id}`,
+      config
+    );
 
     if (data.id_transportista != null) {
       cargarContactos(data.id_transportista);
@@ -203,59 +221,83 @@ const GestionAlerta = () => {
   const obtenerAlarmasCeiba = async () => {
     const token = localStorage.getItem("token_adam");
     if (!token) return;
-  
+
     const config = {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     try {
       const { data } = await clienteAxios.get(
-        `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
+        `/general/obtenerAlertasHOWEN/${startDateFilter}/${endDateFilter}`,
         config
       );
-     
-      setAlerts(data);
+       setAlerts(data);
       filterAlerts(data, statusFilter, searchTerm, selectedTransportista);
     } catch (error) {
       console.log(error);
-    } 
+    }
+  };
+ 
+  const obtenerEvidencia = async (alarmGuid) => {
+    const token = localStorage.getItem("token_adam");
+    if (!token) return;
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      const { data } = await clienteAxios.get(
+        `/general/obtenerEvidenciaUnidadHOWEN/${alarmGuid}`,
+        config
+      );
+      console.log(data)
+      setUrlEvidencia(data)
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  
+
   const showNotification = (message) => {
-    if (Notification.permission === 'granted') {
-      new Notification('Nueva Alerta', { body: message });
-    } else if (Notification.permission !== 'denied') {
+    if (Notification.permission === "granted") {
+      new Notification("Nueva Alerta", { body: message });
+    } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          new Notification('Nueva Alerta', { body: message });
+        if (permission === "granted") {
+          new Notification("Nueva Alerta", { body: message });
         }
       });
     }
   };
 
   useEffect(() => {
-    if (Notification.permission !== 'granted') {
+    if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
   }, []);
 
   useEffect(() => {
     obtenerAlarmasCeiba();
-  
+
     const intervalId = setInterval(() => {
       obtenerAlarmasCeiba();
     }, 60000); // 60000 ms = 1 minuto
-  
+
     return () => clearInterval(intervalId); // Limpia el intervalo al desmontar el componente
-  }, [startDateFilter, endDateFilter, statusFilter, searchTerm, selectedTransportista]);
-
-
-
-  
+  }, [
+    startDateFilter,
+    endDateFilter,
+    statusFilter,
+    searchTerm,
+    selectedTransportista,
+  ]);
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -271,20 +313,18 @@ const GestionAlerta = () => {
     try {
       const { data } = await clienteAxios.get(
         `/adam/obtenerDetalleGestion/${id}`,
-        config
+        configGestionAlarmas
       );
 
       setGestiones(data);
-   
     } catch (error) {
       console.log(error);
     }
   };
 
-  const gestionarAlerta = async (
-    id_estado,
-  ) => {
-    try {
+  const gestionarAlerta = async (id_estado) => {
+    try {    
+      console.log(selectedUrl.guid)
       const token = localStorage.getItem("token_adam");
 
       if (!token) {
@@ -300,53 +340,50 @@ const GestionAlerta = () => {
       };
 
       const { data } = await clienteAxios.post(
-        `/adam/gestionAlerta/${selectedUrl.id}`, // Incorporando el parámetro en la URL
+        `/adam/gestionarAlertaHowen/${selectedUrl.guid}`, // Incorporando el parámetro en la URL
         {
-          id_estado          
+          id_estado,
         },
         config
       );
 
-      setEstadoGEstion(id_estado)
+      setEstadoGEstion(id_estado);
       setGestionada(true);
-      obtenerAlarmasCeiba()
+      obtenerAlarmasCeiba();
       msgOk(data.msg);
-
     } catch (error) {
       msgError(error.response.data.msg);
     }
   };
 
-
   const limpiarFormulario = () => {
     setDetalleGestion("");
   };
 
-
   const filterAlerts = (alerts, status, term, transportista) => {
-
-
     let filtered = alerts;
 
     if (status !== "Todas") {
-      filtered = filtered.filter((alert) => alert.estado == status.id);
+      filtered = filtered.filter((alert) => alert.est_gestionada == status.id);
     }
 
     if (term) {
       filtered = filtered.filter(
         (alert) =>
-          alert.unidad.toLowerCase().includes(term.toLowerCase()) ||
-          alert.nom_tipo_alarma.toLowerCase().includes(term.toLowerCase())
+          alert.deviceName.toLowerCase().includes(term.toLowerCase()) ||
+          alert.alarmTypeValue.toLowerCase().includes(term.toLowerCase()) ||
+          alert.guid.toLowerCase().includes(term.toLowerCase()) 
       );
     }
-    
+
     if (transportista && transportista.value) {
-      filtered = filtered.filter((alert) => alert.id_transportista == transportista.value);
+      filtered = filtered.filter(
+        (alert) => alert.id_transportista == transportista.value
+      );
     }
 
     setFilteredAlerts(filtered);
   };
-
 
   useEffect(() => {
     obtenerEstados();
@@ -354,7 +391,6 @@ const GestionAlerta = () => {
     cargarTransportistasUsuario(auth.id);
   }, []);
 
-  
   const handleFilter = (status) => {
     setStatusFilter(status);
     filterAlerts(alerts, status, searchTerm, selectedTransportista);
@@ -382,7 +418,6 @@ const GestionAlerta = () => {
 
   const handleTransportistaChange = (event, value) => {
     setSelectedTransportista(value);
-
 
     filterAlerts(alerts, statusFilter, searchTerm, value);
     setCurrentPage(1);
@@ -439,8 +474,8 @@ const GestionAlerta = () => {
   };
 
   const handleSendWhatsApp = async (contacto) => {
-try {
-    const token = localStorage.getItem("token_adam");
+    try {
+      const token = localStorage.getItem("token_adam");
       if (!token) return;
 
       const config = {
@@ -453,59 +488,72 @@ try {
       await clienteAxios.post(
         `/adam/detalleGestion/${selectedUrl.id}`, // Incorporando el parámetro en la URL
         {
-          id_estado : estadoGestion,
+          id_estado: estadoGestion,
           usr_gestion: auth.nom_usuario,
           detalle: detalleGestion,
-          nom_contacto : contacto.nom_contacto,
-          fono_contacto : contacto.fono,
-          mail_contacto : contacto.mail,
+          nom_contacto: contacto.nom_contacto,
+          fono_contacto: contacto.fono,
+          mail_contacto: contacto.mail,
           id_alarma_ceiba: selectedUrl.id_ceiba,
-          tipo_notificacion : "WhatsApp"
+          tipo_notificacion: "WhatsApp",
         },
         config
       );
 
       msgOk(data.msg);
-
     } catch (error) {
       console.log(error);
     }
 
     // Formatear la fecha a un formato legible
-    const fechaFormateada = new Date(selectedUrl.inicio).toLocaleString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    const fechaFormateada = new Date(selectedUrl.inicio).toLocaleString(
+      "es-ES",
+      {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }
+    );
 
     // Construir el mensaje
     const mensaje = `*Alerta ADAM*\n\n*Tipo de Alerta:* ${selectedUrl.nom_tipo_alarma}\n*Unidad:* ${selectedUrl.unidad}\n*Fecha y Hora:* ${fechaFormateada}\n*ID de Alerta:* ${selectedUrl.id_ceiba}\n\n*Detalle:* ${detalleGestion}\n\nVer Evidencia: ${selectedUrl.url_evidencia}`;
     const phone = contacto.fono.replace(/[^\d]/g, ""); // Formatear el número de teléfono
 
     // Copiar mensaje al portapapeles
-    navigator.clipboard.writeText(mensaje).then(() => {
-      // Acortar la URL usando tinyurl.com
-      fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(selectedUrl.url_evidencia)}`)
-        .then((response) => response.text())
-        .then((shortUrl) => {
-          const mensajeConShortUrl = mensaje.replace(selectedUrl.url_evidencia, shortUrl);
-          const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensajeConShortUrl)}`;
-          window.open(url, "_blank");
-        })
-        .catch((err) => {
-          console.error('Error al acortar la URL:', err);
-        });
-    }).catch((err) => {
-      console.error('Error al copiar al portapapeles:', err);
-    });
+    navigator.clipboard
+      .writeText(mensaje)
+      .then(() => {
+        // Acortar la URL usando tinyurl.com
+        fetch(
+          `https://tinyurl.com/api-create.php?url=${encodeURIComponent(
+            selectedUrl.url_evidencia
+          )}`
+        )
+          .then((response) => response.text())
+          .then((shortUrl) => {
+            const mensajeConShortUrl = mensaje.replace(
+              selectedUrl.url_evidencia,
+              shortUrl
+            );
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+              mensajeConShortUrl
+            )}`;
+            window.open(url, "_blank");
+          })
+          .catch((err) => {
+            console.error("Error al acortar la URL:", err);
+          });
+      })
+      .catch((err) => {
+        console.error("Error al copiar al portapapeles:", err);
+      });
   };
 
   const handleSendEmail = async (contacto) => {
     try {
-
       const token = localStorage.getItem("token_adam");
       if (!token) return;
 
@@ -529,20 +577,19 @@ try {
       await clienteAxios.post(
         `/adam/detalleGestion/${selectedUrl.id}`, // Incorporando el parámetro en la URL
         {
-          id_estado : estadoGestion,
+          id_estado: estadoGestion,
           usr_gestion: auth.nom_usuario,
           detalle: detalleGestion,
-          nom_contacto : contacto.nom_contacto,
-          fono_contacto : contacto.fono,
-          mail_contacto : contacto.mail,
+          nom_contacto: contacto.nom_contacto,
+          fono_contacto: contacto.fono,
+          mail_contacto: contacto.mail,
           id_alarma_ceiba: selectedUrl.id_ceiba,
-          tipo_notificacion : "Mail"
+          tipo_notificacion: "Mail",
         },
         config
       );
 
       msgOk(data.msg);
-
     } catch (error) {
       console.log(error);
     }
@@ -554,7 +601,7 @@ try {
       Id: alert.id_ceiba,
       Alarma: alert.nom_tipo_alarma,
       Unidad: alert.unidad,
-      "Fecha Alerta":   moment(alert.inicio).format("DD-MM-YYYY HH:mm:ss"),
+      "Fecha Alerta": moment(alert.inicio).format("DD-MM-YYYY HH:mm:ss"),
       Estado:
         estados.find((status) => status.id == alert.estado)?.nombre_estado ||
         alert.estado,
@@ -578,7 +625,10 @@ try {
 
   return (
     <div className="mx-auto relative">
-            <div className="text-center font-bold text-xl pb-3 text-red-900">Gestión ADAM</div>
+      <div className="text-center font-bold text-xl pb-3 text-blue-900">
+        Gestión HOWEN
+      </div>
+
       <div className="flex justify-around items-center mb-1">
         {estados.map((status) => (
           <div
@@ -590,14 +640,14 @@ try {
           >
             <h2 className="text-xl">{status.nom_kpi}</h2>
             <h3 className="text-3xl font-bold">
-              {alerts.filter((alert) => alert.estado == status.id).length}
+              {alerts.filter((alert) => alert.est_gestionada == status.id).length}
             </h3>
           </div>
         ))}
         <div
           className={`flex-1 p-4 m-2 text-center shadow-xl cursor-pointer rounded-lg ${
             statusFilter === "Todas"
-              ? "bg-red-950 text-white"
+              ? "bg-blue-950 text-white"
               : "bg-gray-400 text-black"
           } hover:opacity-75`}
           onClick={() => handleFilter("Todas")}
@@ -606,30 +656,20 @@ try {
           <h3 className="text-3xl font-bold">{alerts.length}</h3>
         </div>
       </div>
-      <div className="flex mb-2 space-x-4">
-        <div className="w-5/12 bg-white">
-          <Autocomplete
-            options={transportistasUsuarios}
-            getOptionLabel={(option) => option.label}
-            value={selectedTransportista}
-            className="bg-white"
-            onChange={handleTransportistaChange}
-            renderInput={(params) => (
-              <TextField {...params} label="Filtrar por Transportista" variant="outlined" />
-            )}
-          />
-        </div>      
+
+
+      <div className="flex mb-2 space-x-4 justify-end">
         <input
           type="text"
           placeholder="Buscar unidad..."
-          className="p-2 border rounded"
+          className="p-2 border rounded w-5/12"
           value={searchTerm}
           onChange={handleSearch}
         />
         <div className="flex space-x-4">
           <input
             type="date"
-            className="p-2 border rounded"
+            className="p-2 border rounded "
             value={startDateFilter}
             onChange={handleStartDateChange}
           />
@@ -642,51 +682,48 @@ try {
         </div>
         <div>
           <button
-            className="bg-green-700 hover:bg-green-900 text-white font-bold py-2 mt-1 px-2 rounded"
+            className="bg-green-700 hover:bg-green-800 text-white font-bold py-2 mt-1 px-2 rounded"
             onClick={handleExportToExcel}
           >
             <FileDownloadTwoToneIcon />
           </button>
         </div>
       </div>
-      
+
       <div className="mb-0 bg-red">
         <div className="w-12/12 overflow-x-auto">
           <table className="min-w-full bg-white rounded-lg shadow-xl text-sm">
-            <thead className="bg-red-700 text-white">
+            <thead className="bg-blue-950 text-white">
               <tr>
                 <th className="py-2 px-4">Alarma</th>
                 <th className="py-2 px-4">Unidad</th>
-                <th className="py-2 px-4">Transportista</th>
                 <th className="py-2 px-4">Fecha Alerta</th>
                 <th className="py-2 px-4">Estado</th>
+
                 <th className="py-2 px-4"></th>
               </tr>
             </thead>
             <tbody className="text-center">
               {paginatedAlerts.map((alert) => (
                 <tr key={alert.id} className="hover:bg-gray-200">
-                  <td className="py-2 px-4 font-bold">
-                    <span>
-                      {alert.id_ceiba + " | " + alert.nom_tipo_alarma}
-                    </span>
+                  <td className="py-2 px-4">
+                    <p>{alert.alarmTypeValue}</p> <p>{alert.guid}</p>
                   </td>
-                  <td className="py-2 px-4">{alert.unidad}</td>
-                  <td className="py-2 px-4">{alert.transportista_nombre}</td>
-                  <td className="py-2 px-4">   {moment(alert.inicio).format("DD-MM-YYYY HH:mm:ss")}</td>
+                  <td className="py-2 px-4">{alert.deviceName}</td>
+                  <td className="py-2 px-4">{alert.reportTime}</td>
+
                   <td className="py-2 px-4 font-semibold">
                     <span>
-                      {estados.find((status) => status.id == alert.estado)
-                        ?.nom_kpi || alert.estado}
+                      {estados.find(
+                        (status) => status.id == alert.est_gestionada
+                      )?.nom_kpi || alert.estado}
                     </span>
                   </td>
 
-              
-
                   <td className="space-x-2 text-center">
-                    {alert.estado == 8 && (
+                    {alert.est_gestionada == 8 && (
                       <button
-                        className="bg-red-950 hover:bg-red-900 text-white font-semibold py-2 px-4 rounded"
+                        className="bg-blue-900 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
                         onClick={() => {
                           openModal(alert);
                         }}
@@ -724,7 +761,7 @@ try {
       <Dialog
         fullWidth={true}
         maxWidth={"xl"}
-       /*  PaperProps={{
+        /*  PaperProps={{
           style: {
             height: "10vh", // Ajusta la altura según tus necesidades
           },
@@ -734,38 +771,36 @@ try {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogContent>
-         <iframe
+        {/*    <DialogContent>
+          <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe>  
-     
-        </DialogContent>
+          ></iframe>
+        </DialogContent> */}
         <DialogActions>
           {!ver ? (
             <div className="bg-gray-300 w-full">
               <div className="justify-center flex p-3">
                 <div className="gap-10 flex mb-2 items-center">
                   <span className="text-red-900 font font-semibold">
-                    ID:{" "}
-                    <span className="text-red-500">{selectedUrl.id_ceiba}</span>{" "}
-                  </span>
-
-                  <span className="text-red-900 font font-semibold">
                     Alerta:{" "}
                     <span className="text-red-500">
-                      {selectedUrl.nom_tipo_alarma}
+                      {selectedUrl.alarmTypeValue}
                     </span>{" "}
                   </span>
                   <span className="text-red-900 font font-semibold">
                     Unidad:{" "}
-                    <span className="text-red-500">{selectedUrl.unidad}</span>{" "}
+                    <span className="text-red-500">
+                      {selectedUrl.deviceName}
+                    </span>{" "}
                   </span>
                   <span className="text-red-900 font font-semibold">
                     Fecha:{" "}
-                    <span className="text-red-500">{selectedUrl.inicio}</span>{" "}
+                    <span className="text-red-500">
+                      {selectedUrl.reportTime}
+                    </span>{" "}
                   </span>
                   <span className="text-red-900 font">
                     <textarea
@@ -792,15 +827,49 @@ try {
                       </div>
                     )}
                   </span>
-                  <a href={selectedUrl.url_evidencia} className="bg-blue-700 text-white p-2 rounded-md hover:bg-blue-600" target="_blank" >Ver Evidencia</a>
-     
-
+                 
                 </div>
               </div>
 
+              {urlEvidencia.length > 0 ? (
+                <table className="min-w-full text-center bg-white rounded-lg shadow-md text-sm">
+                  <thead className="bg-red-900 text-white">
+                    <tr>
+                      <th className="py-2 px-4">Tipo de Evidencia</th>
+                      <th className="py-2 px-4">Unidad</th>
+                      <th className="py-2 px-4">Fecha Inicio</th>
+                      <th className="py-2 px-4">Fecha Fin</th>
+                      <th className="py-2 px-4"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {urlEvidencia.map((evidencia, index) => (
+                      <tr key={index} className="hover:bg-gray-300">
+                        <td className="px-4 py-2">{evidencia.alarmTypeValue}</td>
+                        <td className="px-4 py-2">{evidencia.deviceName}</td>
+                        <td className="px-4 py-2">{evidencia.fileStartTime}</td>
+                        <td className="px-4 py-2">{evidencia.fileStopTime}</td>
+                        <td className="px-4 py-2">
+                          <a
+                            href={evidencia.downUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:text-blue-700"
+                          >
+                            Ver Evidencia
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center my-10 font-thin text-xl">No hay evidencias disponibles.</div>
+              )}
+
               {contactos.length > 0 ? (
                 <div>
-                  <table className="min-w-full bg-white  rounded-lg shadow-md text-sm">
+                  <table className="min-w-full  bg-white  rounded-lg shadow-md text-sm">
                     <thead className="bg-red-900 text-white">
                       <tr>
                         <th className="py-1 px-4">Nombre Contacto</th>
@@ -861,8 +930,6 @@ try {
                 </div>
               </div>
             </div>
-
-
           ) : gestiones.length > 0 ? (
             <div className=" text-xs text-center justify-center w-full mx-2 mb-2">
               <div className="overflow-x-auto">
@@ -879,14 +946,13 @@ try {
 
                       <th className="py-2 px-4 border-b">Tipo Notificación</th>
                       <th className="py-2 px-4 border-b">Fecha Registro</th>
-                      
                     </tr>
                   </thead>
                   <tbody>
                     {gestiones.map((item) => (
                       <tr key={item.id} className="hover:bg-gray-200">
                         <td className="py-2 px-4 border-b">
-                          {item.id_alarma_ceiba}
+                          {item.alarmTypeValue}
                         </td>
                         <td className="py-2 px-4 border-b">
                           {item.id_estado == 9 ? "Gestionada" : "No Gestionada"}
@@ -911,7 +977,6 @@ try {
                         <td className="py-2 px-4 border-b">
                           {new Date(item.createdAt).toLocaleString()}
                         </td>
-                      
                       </tr>
                     ))}
                   </tbody>
@@ -932,13 +997,17 @@ try {
               </div>
             </div>
           ) : (
-            <div className="w-full text-center">            
-          
-              <a href={selectedUrl.url_evidencia} className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600" target="_blank" >Ver Evidencia</a>
-                  
+            <div className="w-full text-center">
+              <a
+                href={urlEvidencia}
+                className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600"
+                target="_blank"
+              >
+                Ver Evidencia
+              </a>
+
               <div className="w-full text-center font-semibold my-5">
                 <span className=" text-red-700">Sin Gestiones</span>
-                
               </div>
               <div className="flex gap-2 justify-end">
                 <button
@@ -953,7 +1022,7 @@ try {
         </DialogActions>
       </Dialog>
 
-      <div className="container mx-auto px-4 py-4">
+      {/*       <div className="container mx-auto px-4 py-4">
         <div className="gap-4">
           <div className="w-12/12 h-56 mb-20">
             <h2 className="text-lg font-bold mb-4">Top 10 alarmas</h2>
@@ -970,9 +1039,9 @@ try {
             />
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };
 
-export default GestionAlerta;
+export default GestionAlarmasHowen;

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
-import { msgError, msgOk } from "../../components/Alertas";
-import clienteAxios from "../../config/axios";
-import useAuth from "../../hooks/useAuth";
+import { msgError, msgOk } from "../../../components/Alertas";
+import clienteAxios from "../../../config/axios";
+import useAuth from "../../../hooks/useAuth";
 import {
   TextField,
   Select,
@@ -15,26 +15,22 @@ import {
   TableRow,
   TableBody,
   TableContainer,
-  Tabs,
-  Tab,
-  Typography,
+  CircularProgress,
   Box,
+  Typography
 } from "@mui/material";
-import Descargar from "../../components/datos/Descargar";
+import Descargar from "../../../components/datos/Descargar";
 import debounce from "lodash/debounce";
-import Spinner from "../../components/animaciones/Spinner";
-import UnidadesHowen from "../HOWEN/mantenedores/UnidadesHowen";
+import Spinner from '../../../components/animaciones/Spinner';
 
-const Camiones = () => {
+const UnidadesHowen = () => {
   const { auth } = useAuth();
   const [transportistas, setTransportistas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [camiones, setCamiones] = useState([]);
-  const [camionesHowen, setCamionesHowen] = useState([]);
+  const [unidadesHowen, setUnidadesHowen] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingHowen, setLoadingHowen] = useState(false); // Controla el loading de Howen
-  const [tabIndex, setTabIndex] = useState(0); // Controlar el índice de la pestaña activa
 
+  // Fetching data on load
   useEffect(() => {
     obtenerCamiones();
     obtenerTransportistas();
@@ -53,12 +49,11 @@ const Camiones = () => {
       const { data } = await clienteAxios.get(`/adam/transportista`, config);
       setTransportistas(data);
     } catch (error) {
-      console.error("Error al obtener transportistas", error);
+      console.error('Error al obtener transportistas', error);
     }
   };
 
   const obtenerCamiones = async () => {
-
     try {
       const token = localStorage.getItem("token_adam");
       if (!token) return;
@@ -69,30 +64,10 @@ const Camiones = () => {
         },
       };
       const { data } = await clienteAxios.get(`/adam/unidadesAdam`, config);
-      setCamiones(data);
-      setLoading(false); // Detiene el spinner de la vista Ceiba
+      setUnidadesHowen(data);
+      setLoading(false);
     } catch (error) {
-      console.error("Error al obtener camiones", error);
-    }
-  };
-
-  const obtenerCamionesHowen = async () => {
-    setLoadingHowen(true); // Empieza el spinner para Howen
-    try {
-      const token = localStorage.getItem("token_adam");
-      if (!token) return;
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const { data } = await clienteAxios.get(`/adam/unidadesHowen`, config);
-      setCamionesHowen(data);
-      setLoadingHowen(false); // Detiene el spinner cuando la data se carga
-    } catch (error) {
-      console.error("Error al obtener camiones Howen", error);
-      setLoadingHowen(false); // Detener el spinner en caso de error
+      console.error('Error al obtener UnidadesHowen', error);
     }
   };
 
@@ -100,7 +75,7 @@ const Camiones = () => {
     try {
       const token = localStorage.getItem("token_adam");
       if (!token) {
-        msgError("Token no válido");
+        msgError("Token no valido");
         return;
       }
 
@@ -117,61 +92,35 @@ const Camiones = () => {
         config
       );
       msgOk(data.msg);
-      obtenerCamiones(); // Refrescar camiones después de la actualización
+      obtenerCamiones(); // Refrescar la lista después de actualizar
     } catch (error) {
       msgError(error.response?.data?.msg || "Error al actualizar camión");
     }
   }, 400);
 
   const handleChange = (field, value, camion) => {
-    const updatedCamiones = camiones.map((c) =>
+    const updatedCamiones = unidadesHowen.map((c) =>
       c.id === camion.id ? { ...c, [field]: value } : c
     );
-    setCamiones(updatedCamiones);
+    setUnidadesHowen(updatedCamiones);
     handleUpdate({ ...camion, [field]: value });
   };
 
-  const filtered = useMemo(
-    () =>
-      camiones.filter((val) => {
-        if (busqueda === "") return true;
-        return val.nom_patente.toLowerCase().includes(busqueda.toLowerCase());
-      }),
-    [camiones, busqueda]
-  );
+  // Memoization for filtering
+  const filtered = useMemo(() => unidadesHowen.filter((val) => {
+    if (busqueda === "") return true;
+    return val.nom_patente.toLowerCase().includes(busqueda.toLowerCase());
+  }), [unidadesHowen, busqueda]);
 
-  const filteredHowen = useMemo(
-    () =>
-      camionesHowen.filter((val) => {
-        if (busqueda === "") return true;
-        return val.nom_patente.toLowerCase().includes(busqueda.toLowerCase());
-      }),
-    [camionesHowen, busqueda]
-  );
-
-  const handleTabChange = (event, newValue) => {
-    setTabIndex(newValue);
-    if (newValue === 1) {
-      obtenerCamionesHowen(); // Cargar camiones Howen cuando se selecciona la pestaña
-    }
-  };
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <>
-      <Box sx={{ width: "100%" }}>
-        <Tabs value={tabIndex} onChange={handleTabChange} centered>
-          <Tab label="Unidades Ceiba" />
-          <Tab label="Unidades Howen" />
-        </Tabs>
+      <Box>     
 
-        {/* VISTA DE UNIDADES CEIBA */}
-        {tabIndex === 0 && (
-          <Box>
-            {loading ? (
-              <Spinner />
-            ) : (
-              <>
-               <div className="flex flex-col">
+        <div className="flex flex-col">
           <div className="flex justify-between items-end gap-4 mb-2">
             <div className="flex gap-2 w-full lg:w-3/12 border shadow px-1 text-sky-500">
               <input
@@ -187,7 +136,7 @@ const Camiones = () => {
             </div>
 
             <div className="text-right mr-4 mb-4 text-sm font-bold text-red-900">
-              Total de Unidades: {camiones.length}
+              Total de Unidades: {unidadesHowen.length}
             </div>
           </div>
 
@@ -215,7 +164,7 @@ const Camiones = () => {
                         <InputLabel>Transportista</InputLabel>
                         <Select
                           value={camion.id_transportista || ""}
-                          label = "Transportista"
+                          label="Transportista"
                           onChange={(e) => handleChange("id_transportista", e.target.value, camion)}
                         >
                           {transportistas.map((t) => (
@@ -259,20 +208,9 @@ const Camiones = () => {
             </Table>
           </TableContainer>
         </div>
-              </>
-            )}
-          </Box>
-        )}
-
-        {/* VISTA DE UNIDADES HOWEN */}
-        {tabIndex === 1 && (
-          <Box>
-            {loadingHowen ? <Spinner /> : <UnidadesHowen />}
-          </Box>
-        )}
       </Box>
     </>
   );
 };
 
-export default Camiones;
+export default UnidadesHowen;

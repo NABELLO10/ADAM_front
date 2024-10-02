@@ -34,6 +34,8 @@ import InicioConductor from "./pages/procesos/InicioConductor"
 import GestionAlerta from "./pages/ADAM/procesos/GestionAlerta"
 import AlertasTransportistas from "./pages/ADAM/procesos/AlertasTransportistas"
 
+import GestionAlarmasHowen from "./pages/HOWEN/procesos/GestionAlarmasHowen"
+
 
 function App() {
   return (
@@ -82,6 +84,8 @@ function App() {
               <Route path="gestionAlerta" element={<GestionAlerta />} />
               <Route path="alertaTransportista" element={<AlertasTransportistas />} />
             
+            {/* HOWEN */}
+            <Route path="gestionAlertaHowen" element={<GestionAlarmasHowen />} />
 
             </Route>
           </Routes>

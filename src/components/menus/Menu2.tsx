@@ -15,6 +15,7 @@ import useAuth from "../../hooks/useAuth";
 import PhonelinkRingTwoToneIcon from '@mui/icons-material/PhonelinkRingTwoTone';
 import ModeOfTravelTwoToneIcon from '@mui/icons-material/ModeOfTravelTwoTone';
 import LocalShippingTwoToneIcon from '@mui/icons-material/LocalShippingTwoTone';
+import ScreenshotMonitorTwoToneIcon from '@mui/icons-material/ScreenshotMonitorTwoTone';
 import HeadsetMicTwoToneIcon from '@mui/icons-material/HeadsetMicTwoTone';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -122,6 +123,13 @@ function Menu2() {
                 <Tooltip title="Gestion Alertas">
                   <Link to="/admin/gestionAlerta">
                     <HeadsetMicTwoToneIcon />
+                  </Link>
+                </Tooltip>
+              </div>
+              <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
+                <Tooltip title="Gestion HOWEN">
+                  <Link to="/admin/gestionAlertaHowen">
+                    <ScreenshotMonitorTwoToneIcon />
                   </Link>
                 </Tooltip>
               </div>
