@@ -710,13 +710,13 @@ try {
             </tbody>
           </table>
           <div className="flex justify-center mt-4">
- {/*            <Pagination
+            <Pagination
               count={totalPages}
               page={currentPage}
               onChange={handlePageChange}
               variant="outlined"
               shape="rounded"
-            /> */}
+            /> 
           </div>
         </div>
       </div>
