@@ -8,8 +8,12 @@ import { useEffect } from "react"
  const RutaProtegida = () => {
   const navigate = useNavigate()
   const {auth, cargando} = useAuth()
+  const {setCargando} = useAuth()
     
   useEffect(() => {
+    setCargando(false)
+
+
     if (!cargando && !auth?.id) {
       navigate('/')
     }

@@ -97,7 +97,7 @@ const GestionAlarmasHowen = () => {
     setModalIsOpen(false);
     setGestionada(false);
     setSelectedUrl("");
-    obtenerAlarmasCeiba();
+    obtenerAlarmasHowen();
   };
 
   const openViewModal = async (url) => {
@@ -218,7 +218,7 @@ const GestionAlarmasHowen = () => {
     }
   };
 
-  const obtenerAlarmasCeiba = async () => {
+  const obtenerAlarmasHowen = async () => {
     const token = localStorage.getItem("token_adam");
     if (!token) return;
 
@@ -277,17 +277,17 @@ const GestionAlarmasHowen = () => {
     }
   };
 
-  useEffect(() => {
+/*   useEffect(() => {
     if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
-  }, []);
+  }, []); */
 
-  useEffect(() => {
-    obtenerAlarmasCeiba();
+   useEffect(() => {
+    obtenerAlarmasHowen();
 
     const intervalId = setInterval(() => {
-      obtenerAlarmasCeiba();
+      obtenerAlarmasHowen();
     }, 60000); // 60000 ms = 1 minuto
 
     return () => clearInterval(intervalId); // Limpia el intervalo al desmontar el componente
@@ -297,7 +297,7 @@ const GestionAlarmasHowen = () => {
     statusFilter,
     searchTerm,
     selectedTransportista,
-  ]);
+  ]); 
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -349,7 +349,7 @@ const GestionAlarmasHowen = () => {
 
       setEstadoGEstion(id_estado);
       setGestionada(true);
-      obtenerAlarmasCeiba();
+      obtenerAlarmasHowen();
       msgOk(data.msg);
     } catch (error) {
       msgError(error.response.data.msg);
@@ -376,11 +376,11 @@ const GestionAlarmasHowen = () => {
       );
     }
 
-    if (transportista && transportista.value) {
+/*     if (transportista && transportista.value) {
       filtered = filtered.filter(
         (alert) => alert.id_transportista == transportista.value
       );
-    }
+    } */
 
     setFilteredAlerts(filtered);
   };
@@ -388,12 +388,13 @@ const GestionAlarmasHowen = () => {
   useEffect(() => {
     obtenerEstados();
     obtenerTiposAlarma();
-    cargarTransportistasUsuario(auth.id);
+   // cargarTransportistasUsuario(auth.id);
   }, []);
 
   const handleFilter = (status) => {
     setStatusFilter(status);
-    filterAlerts(alerts, status, searchTerm, selectedTransportista);
+   // filterAlerts(alerts, status, searchTerm, selectedTransportista);
+    filterAlerts(alerts, status, searchTerm);
     setCurrentPage(1);
   };
 
@@ -404,7 +405,8 @@ const GestionAlarmasHowen = () => {
   const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    filterAlerts(alerts, statusFilter, value, selectedTransportista);
+   // filterAlerts(alerts, statusFilter, value, selectedTransportista);
+    filterAlerts(alerts, statusFilter, value);
     setCurrentPage(1);
   };
 
@@ -423,11 +425,11 @@ const GestionAlarmasHowen = () => {
     setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
+   const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
   const paginatedAlerts = filteredAlerts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  );
+  ); 
 
   // Datos para el gráfico de barras
   const barChartData = {
@@ -518,12 +520,12 @@ const GestionAlarmasHowen = () => {
       }
     );
 
-    // Construir el mensaje
+/*     // Construir el mensaje
     const mensaje = `*Alerta ADAM*\n\n*Tipo de Alerta:* ${selectedUrl.nom_tipo_alarma}\n*Unidad:* ${selectedUrl.unidad}\n*Fecha y Hora:* ${fechaFormateada}\n*ID de Alerta:* ${selectedUrl.id_ceiba}\n\n*Detalle:* ${detalleGestion}\n\nVer Evidencia: ${selectedUrl.url_evidencia}`;
-    const phone = contacto.fono.replace(/[^\d]/g, ""); // Formatear el número de teléfono
+    const phone = contacto.fono.replace(/[^\d]/g, ""); // Formatear el número de teléfono */
 
     // Copiar mensaje al portapapeles
-    navigator.clipboard
+/*     navigator.clipboard
       .writeText(mensaje)
       .then(() => {
         // Acortar la URL usando tinyurl.com
@@ -549,7 +551,7 @@ const GestionAlarmasHowen = () => {
       })
       .catch((err) => {
         console.error("Error al copiar al portapapeles:", err);
-      });
+      }); */
   };
 
   const handleSendEmail = async (contacto) => {
@@ -746,7 +748,7 @@ const GestionAlarmasHowen = () => {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-center mt-4">
+           <div className="flex justify-center mt-4">
             <Pagination
               count={totalPages}
               page={currentPage}
@@ -754,13 +756,13 @@ const GestionAlarmasHowen = () => {
               variant="outlined"
               shape="rounded"
             />
-          </div>
+          </div> 
         </div>
       </div>
 
       <Dialog
         fullWidth={true}
-        maxWidth={"xl"}
+        maxWidth={"lg"}
         /*  PaperProps={{
           style: {
             height: "10vh", // Ajusta la altura según tus necesidades
@@ -771,14 +773,14 @@ const GestionAlarmasHowen = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        {/*    <DialogContent>
+            <DialogContent>
           <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
           ></iframe>
-        </DialogContent> */}
+        </DialogContent> 
         <DialogActions>
           {!ver ? (
             <div className="bg-gray-300 w-full">

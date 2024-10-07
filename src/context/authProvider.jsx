@@ -79,7 +79,8 @@ const AuthProvider = ({children}) =>{
                 setAuth,
                 cargando,
                 cerrarSesion,             
-                guardarPassword                     
+                guardarPassword,
+                setCargando                     
             }}>
             {children}
         </authContext.Provider>

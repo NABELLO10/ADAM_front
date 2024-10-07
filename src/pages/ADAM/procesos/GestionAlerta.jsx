@@ -517,7 +517,7 @@ try {
       };
 
       const { data } = await clienteAxios.post(
-        `/general/enviarCorreoAlerta/`, // Incorporando el parámetro en la URL
+        `/general/enviarCorreoAlerta`, // Incorporando el parámetro en la URL
         {
           contacto,
           alerta: selectedUrl,
@@ -710,13 +710,13 @@ try {
             </tbody>
           </table>
           <div className="flex justify-center mt-4">
-            <Pagination
+ {/*            <Pagination
               count={totalPages}
               page={currentPage}
               onChange={handlePageChange}
               variant="outlined"
               shape="rounded"
-            />
+            /> */}
           </div>
         </div>
       </div>
@@ -799,7 +799,7 @@ try {
               </div>
 
               {contactos.length > 0 ? (
-                <div>
+                <div className="px-12">
                   <table className="min-w-full bg-white  rounded-lg shadow-md text-sm">
                     <thead className="bg-red-900 text-white">
                       <tr>
