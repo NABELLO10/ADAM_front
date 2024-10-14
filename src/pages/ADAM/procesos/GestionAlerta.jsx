@@ -734,7 +734,7 @@ try {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogContent>
+ {/*        <DialogContent>
          <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
@@ -742,7 +742,7 @@ try {
             height="100%"
           ></iframe>  
      
-        </DialogContent>
+        </DialogContent> */}
         <DialogActions>
           {!ver ? (
             <div className="bg-gray-300 w-full">

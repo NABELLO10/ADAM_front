@@ -11,7 +11,6 @@ import { useEffect } from "react"
   const {setCargando} = useAuth()
     
   useEffect(() => {
-    setCargando(false)
 
 
     if (!cargando && !auth?.id) {
@@ -22,7 +21,7 @@ import { useEffect } from "react"
       navigate('/')
     } 
 
-  }, [auth?.id, auth.est_activo, cargando, navigate])
+  }, [auth?.id, auth.est_activo, navigate])
 
   if (cargando) return <Spinner/>
    

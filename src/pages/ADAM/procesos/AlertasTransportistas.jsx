@@ -305,37 +305,43 @@ const TransportistasAlertas = () => {
           </div>
 
           <div className="lg:w-7/12 w-full">
-            <div className="mt-0">
+            <div className="mt-0 overflow-auto h-96">
               {alertasTransportistas.length > 0 &&
                 alertasTransportistas.map((relacion, index) => (
                   <div
                     key={index}
-                    className="p-3 mt-2 bg-gray-200 rounded shadow-sm border border-gray-300 flex justify-between items-center"
+                    className="p-3 mt-2 bg-gray-200 rounded shadow-sm border border-gray-300 flex justify-between items-center w-full"
                   >
                     <div>
-                      <span className="font-semibold text-blue-950">
-                        {relacion.transportista.nombre + " " + relacion.transportista.ape_paterno + " " + relacion.transportista.ape_materno}
-                      </span>
-                      <span className="text-blue-900 text-sm">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-red-700 text-lg">
+                          {relacion.transportista.nombre +
+                            " " +
+                            relacion.transportista.ape_paterno +
+                            " " +
+                            relacion.transportista.ape_materno}
+                        </span>
+                        <div>
+                          <button
+                            className="bg-blue-600 text-white p-1 rounded hover:bg-blue-800 mx-1"
+                            onClick={() => handleEdit(relacion)}
+                          >
+                            <EditNoteTwoToneIcon />
+                          </button>
+                          <button
+                            className="bg-red-500 text-white p-1 rounded hover:bg-red-700"
+                            onClick={() => handleOpenDeleteDialog(relacion)}
+                          >
+                            <DeleteTwoToneIcon />
+                          </button>
+                        </div>
+                      </div>
+                      <span className="text-blue-900 text-sm w-full">
                         {relacion.alarmas.map((alerta, idx) => (
                           <li key={idx}>{alerta.nombre_tipo_alarma}</li>
                         ))}
                       </span>
-                    </div>
-
-                    <div>
-                      <button
-                        className="bg-blue-600 text-white p-1 rounded hover:bg-blue-800 mx-1"
-                        onClick={() => handleEdit(relacion)}
-                      >
-                        <EditNoteTwoToneIcon />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white p-1 rounded hover:bg-red-700"
-                        onClick={() => handleOpenDeleteDialog(relacion)}
-                      >
-                        <DeleteTwoToneIcon />
-                      </button>
+                     
                     </div>
                   </div>
                 ))}
