@@ -396,21 +396,34 @@ const GestionAlerta = () => {
 
   // Datos para el gráfico de barras
   const barChartData = {
-    labels: tiposAlarma.map((tipo) => tipo.nombre_tipo_alarma),
+    labels: tiposAlarma
+      .filter(
+        (tipo) =>
+          filteredAlerts.filter((alert) => alert.tipo_alarma === tipo.id_tipo)
+            .length > 0
+      )
+      .map((tipo) => tipo.nombre_tipo_alarma),
     datasets: [
       {
         label: "Cantidad de Alertas",
-        data: tiposAlarma.map(
-          (tipo) =>
-            filteredAlerts.filter((alert) => alert.tipo_alarma === tipo.id_tipo)
-              .length
-        ),
+        data: tiposAlarma
+          .filter(
+            (tipo) =>
+              filteredAlerts.filter((alert) => alert.tipo_alarma === tipo.id_tipo)
+                .length > 0
+          )
+          .map(
+            (tipo) =>
+              filteredAlerts.filter((alert) => alert.tipo_alarma === tipo.id_tipo)
+                .length
+          ),
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 1,
       },
     ],
   };
+  
 
   // Datos para el gráfico de ranking de unidades
   const unitRankingData = filteredAlerts.reduce((acc, alert) => {
@@ -953,16 +966,16 @@ try {
         </DialogActions>
       </Dialog>
 
-      <div className="container mx-auto px-4 py-4">
-        <div className="gap-4">
-          <div className="w-12/12 h-56 mb-20">
+      <div className="container mx-auto px-4 py-4 ">
+        <div className="gap-4 ">
+          <div className="w-12/12 h-56 mb-20 ">
             <h2 className="text-lg font-bold mb-4">Top 10 alarmas</h2>
             <Bar
               data={rankingChartData}
               options={{ responsive: true, maintainAspectRatio: false }}
             />
           </div>
-          <div className="w-12/12 h-96">
+          <div className="w-12/12 h-96 pb-20 ">
             <h2 className="text-lg font-bold mb-4">Total alarmas por tipo</h2>
             <Bar
               data={barChartData}
