@@ -66,16 +66,10 @@ const GestionAlerta = () => {
   const [selectedTransportista, setSelectedTransportista] = useState();
   const [lastAlertDate, setLastAlertDate] = useState(null);
   const [loadVideo, setLoadVideo] = useState(false);
+  const [startDateFilter, setStartDateFilter] = useState("");
+  const [endDateFilter, setEndDateFilter] = useState("");
   
-  const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate());
-  const [startDateFilter, setStartDateFilter] = useState(
-    startDate.toISOString().split("T")[0]
-  );
-  const [endDateFilter, setEndDateFilter] = useState(
-    today.toISOString().split("T")[0]
-  );
+  
 
   const openModal = (url) => {
     setVer(false);
@@ -237,11 +231,11 @@ const GestionAlerta = () => {
     }
   };
 
-  useEffect(() => {
+ /*  useEffect(() => {
     if (Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
-  }, []);
+  }, []); */
 
   useEffect(() => {
     obtenerAlarmasCeiba();
@@ -254,8 +248,6 @@ const GestionAlerta = () => {
   }, [startDateFilter, endDateFilter, statusFilter, searchTerm, selectedTransportista]);
 
 
-
-  
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -352,6 +344,14 @@ const GestionAlerta = () => {
     obtenerEstados();
     obtenerTiposAlarma();
     cargarTransportistasUsuario(auth.id);
+
+    const today = moment(); 
+    // Formatear la fecha actual para ser usada en los filtros
+    const startDate = today.format("YYYY-MM-DD"); // Obtén la fecha en formato YYYY-MM-DD
+    const endDate = today.format("YYYY-MM-DD"); // El mismo formato para la fecha de finalización
+    
+    setStartDateFilter(startDate);
+    setEndDateFilter(endDate);
   }, []);
 
   
@@ -371,6 +371,8 @@ const GestionAlerta = () => {
     filterAlerts(alerts, statusFilter, value, selectedTransportista);
     setCurrentPage(1);
   };
+
+ 
 
   const handleStartDateChange = (e) => {
     setStartDateFilter(e.target.value);
