@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import clienteAxios from "../config/axios";
 import { msgError } from "../components/Alertas";
 
-import GestionAlerta from "../pages/ADAM/procesos/GestionAlerta"
+import GestionAlertasGral from "../pages/procesos/GestionAlertasGral"
 
 
 const Inicio = () => {
@@ -15,7 +15,7 @@ const Inicio = () => {
         </h2>
       </div>
 
-      <GestionAlerta />
+      <GestionAlertasGral />
     </>
   );
 };
