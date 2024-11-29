@@ -64,7 +64,7 @@ const GestionAlertasGral = () => {
   const [infoUnidad, setInfoUnidad] = useState({});
   const [transportistasUsuarios, setTransportistasUsuarios] = useState([]);
   const [ver, setVer] = useState(false);
-  const [selectedTransportista, setSelectedTransportista] = useState();
+  const [selectedTransportista, setSelectedTransportista] = useState(null);
   const [lastAlertDate, setLastAlertDate] = useState(null);
   const [loadVideo, setLoadVideo] = useState(false);
   const [startDateFilter, setStartDateFilter] = useState("");
@@ -346,7 +346,7 @@ const GestionAlertasGral = () => {
     }
   };
 
-  const obtenerAlarmas = async () => {
+/*   const obtenerAlarmas = async () => {
     setLoadingTable(true); // Mostrar spinner
 
     const token = localStorage.getItem("token_adam");
@@ -360,15 +360,7 @@ const GestionAlertasGral = () => {
     };
 
     try {
-      /*   const { data } = await clienteAxios.get(
-        `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
-        config
-      );
-     
-      setAlerts(data);
-      filterAlerts(data, statusFilter, searchTerm, selectedTransportista); */
-
-      await trackRequest(async () => {
+          await trackRequest(async () => {
         const [howenResponse, adamResponse] = await Promise.all([
           clienteAxios.get(
             `/general/obtenerAlertasHOWEN/${startDateFilter}/${endDateFilter}`,
@@ -411,7 +403,69 @@ const GestionAlertasGral = () => {
     } finally {
       setLoadingTable(false); // Ocultar spinner
     }
+  }; */
+
+
+  const obtenerAlarmas = async () => {
+    if (!startDateFilter || !endDateFilter) {
+      console.error("Fechas no configuradas correctamente");
+      return;
+    }
+  
+    setLoadingTable(true); // Mostrar spinner
+  
+    const token = localStorage.getItem("token_adam");
+    if (!token) return;
+  
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  
+    try {
+      await trackRequest(async () => {
+        const [howenResponse, adamResponse] = await Promise.all([
+          clienteAxios.get(
+            `/general/obtenerAlertasHOWEN/${startDateFilter}/${endDateFilter}`,
+            config
+          ),
+          clienteAxios.get(
+            `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
+            config
+          ),
+        ]);
+  
+        const howenAlerts = howenResponse.data.map((alert) => ({
+          ...alert,
+          source: "HOWEN",
+        }));
+        const adamAlerts = adamResponse.data.map((alert) => ({
+          ...alert,
+          source: "ADAM",
+        }));
+  
+        const combinedAlerts = [...howenAlerts, ...adamAlerts].sort(
+          (a, b) =>
+            new Date(b.inicio || b.reportTime) - new Date(a.inicio || a.reportTime)
+        );
+  
+        setAlerts(combinedAlerts);
+        filterAlerts(
+          combinedAlerts,
+          statusFilter,
+          searchTerm,
+          selectedTransportista
+        );
+      });
+    } catch (error) {
+      console.error("Error obteniendo alarmas:", error);
+    } finally {
+      setLoadingTable(false); // Ocultar spinner
+    }
   };
+  
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -473,7 +527,7 @@ const GestionAlertasGral = () => {
     setDetalleGestion("");
   };
 
-  const filterAlerts = (alerts, status, term, transportista) => {
+/*   const filterAlerts = (alerts, status, term, transportista) => {
     let filtered = alerts;
 
     if (status !== "Todas") {
@@ -498,7 +552,40 @@ const GestionAlertasGral = () => {
     }
 
     setFilteredAlerts(filtered);
+  }; */
+
+  const filterAlerts = (alerts, status, term, transportista) => {
+    let filtered = alerts;
+  
+    // Filtrar por estado
+    if (status !== "Todas") {
+      filtered = filtered.filter((alert) => alert.estado === status.id);
+    }
+  
+    // Filtrar por término de búsqueda
+    if (term) {
+      const termLowerCase = term.toLowerCase();
+      filtered = filtered.filter(
+        (alert) =>
+          (alert.unidad && alert.unidad.toLowerCase().includes(termLowerCase)) || // Filtrar por unidad
+          (alert.nom_tipo_alarma &&
+            alert.nom_tipo_alarma.toLowerCase().includes(termLowerCase)) || // Filtrar por tipo de alarma
+          (alert.deviceName &&
+            alert.deviceName.toLowerCase().includes(termLowerCase)) // Filtrar por nombre del dispositivo
+      );
+    }
+  
+    // Filtrar por transportista
+    if (transportista && transportista.value) {
+      filtered = filtered.filter(
+        (alert) => alert.id_transportista === transportista.value
+      );
+    }
+  
+    setFilteredAlerts(filtered);
   };
+  
+  
 
   const handleFilter = async (status) => {
     setLoadingTable(true); // Mostrar spinner antes de comenzar el filtro
@@ -532,10 +619,10 @@ const GestionAlertasGral = () => {
 
   const handleTransportistaChange = (event, value) => {
     setSelectedTransportista(value);
-
-    filterAlerts(alerts, statusFilter, searchTerm, value);
+    filterAlerts(alerts, statusFilter, searchTerm, value); // Reaplica los filtros
     setCurrentPage(1);
   };
+  
 
   const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
   const paginatedAlerts = filteredAlerts.slice(
@@ -574,34 +661,6 @@ const GestionAlertasGral = () => {
       },
     ],
   };
-
-/*   // Datos para el gráfico de ranking de unidades
-  const unitRankingData = filteredAlerts.reduce((acc, alert) => {
-    const unitName = alert.unidad;
-    if (!acc[unitName]) {
-      acc[unitName] = 0;
-    }
-    acc[unitName]++;
-    return acc;
-  }, {});
-
-  const sortedUnits = Object.keys(unitRankingData)
-    .sort((a, b) => unitRankingData[b] - unitRankingData[a])
-    .slice(0, 10);
-  const rankingChartData = {
-    labels: sortedUnits,
-    datasets: [
-      {
-        label: "Cantidad de Alertas",
-        data: sortedUnits.map((unit) => unitRankingData[unit]),
-        backgroundColor: "rgba(54, 162, 235, 0.2)",
-        borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 1,
-      },
-    ],
-  }; */
-
-
 
 
   // Datos para el gráfico de ranking de unidades
@@ -830,9 +889,7 @@ const rankingChartData = {
 
   return (
     <div className="mx-auto relative">
-      <div className="text-center font-bold text-xl pb-3 text-red-950">
-        Gestión Alertas 
-      </div>
+    
       <div className="flex justify-around items-center mb-1">
         {estados.map((status) => (
           <div
@@ -862,20 +919,21 @@ const rankingChartData = {
       </div>
       <div className="flex mb-2 space-x-4">
         <div className="w-5/12 bg-white">
-          <Autocomplete
-            options={transportistasUsuarios}
-            getOptionLabel={(option) => option.label}
-            value={selectedTransportista}
-            className="bg-white"
-            onChange={handleTransportistaChange}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Filtrar por Transportista"
-                variant="outlined"
-              />
-            )}
-          />
+     
+
+<Autocomplete
+  options={transportistasUsuarios}
+  getOptionLabel={(option) => option.label}
+  value={selectedTransportista} // Controlado siempre
+  onChange={(event, value) => handleTransportistaChange(event, value)}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Filtrar por Transportista"
+      variant="outlined"
+    />
+  )}
+/>
         </div>
         <input
           type="text"
@@ -927,64 +985,59 @@ const rankingChartData = {
                 </tr>
               </thead>
               <tbody className="text-center">
-                {paginatedAlerts.map((alert) => (
-                  <tr
-                    key={alert.id}
-                    className={`hover:bg-gray-300  ${
-                      alert.source === "HOWEN" ? "bg-blue-100" : "bg-red-100"
-                    }`}
-                  >
-                    <td className="py-2 px-4">
-                      {alert.source === "HOWEN"
-                        ? alert.alarmTypeValue
-                        : alert.nom_tipo_alarma}
-                    </td>
-                    <td className="py-2 px-4">
-                      {alert.source === "HOWEN"
-                        ? alert.deviceName + " | " + alert.deviceno
-                        : alert.unidad}
-                    </td>
-                    <td className="py-2 px-4">
-                      {moment(alert.inicio || alert.reportTime).format(
-                        "DD-MM-YYYY HH:mm:ss"
-                      )}
-                    </td>
-                    <td className="py-2 px-4 font-bold text-xs">
-                      {estados.find((status) => status.id === alert.estado)
-                        ?.nombre_estado || alert.estado}
-                    </td>
-                    <td className="py-2 px-4 text-xs italic">{alert.source}</td>
-                    <td className="space-x-2 text-center">
-                      {alert.estado == 8 && (
-                        <button
-                          className="bg-blue-500 hover:bg-stone-800 text-white font-semibold py-2 px-4 rounded"
-                          onClick={() => {
-                            openModal(alert);
-                            alert.source === "HOWEN"
-                              ? setOrigen("H")
-                              : setOrigen("A");
-                          }}
-                        >
-                          Gestionar
-                        </button>
-                      )}
-                      {(alert.estado == 9 || alert.estado == 10) && (
-                        <button
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-                          onClick={() => {
-                            openViewModal(alert);
-                            alert.source === "HOWEN"
-                              ? setOrigen("H")
-                              : setOrigen("A");
-                          }}
-                        >
-                          Ver
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+  {paginatedAlerts.map((alert, index) => (
+    <tr
+    key={`${alert.id || alert.guid}-${index}`} // Combina ID o GUID con el índice
+    className={`hover:bg-gray-300 ${alert.source === "HOWEN" ? "bg-blue-100" : "bg-red-100"}`}
+  >
+      <td className="py-2 px-4">
+        {alert.source === "HOWEN"
+          ? alert.alarmTypeValue
+          : alert.nom_tipo_alarma}
+      </td>
+      <td className="py-2 px-4">
+        {alert.source === "HOWEN"
+          ? alert.deviceName + " | " + alert.deviceno
+          : alert.unidad}
+      </td>
+      <td className="py-2 px-4">
+        {moment(alert.inicio || alert.reportTime).format(
+          "DD-MM-YYYY HH:mm:ss"
+        )}
+      </td>
+      <td className="py-2 px-4 font-bold text-xs">
+        {estados.find((status) => status.id === alert.estado)?.nombre_estado ||
+          alert.estado}
+      </td>
+      <td className="py-2 px-4 text-xs italic">{alert.source}</td>
+      <td className="space-x-2 text-center">
+        {alert.estado == 8 && (
+          <button
+            className="bg-blue-500 hover:bg-stone-800 text-white font-semibold py-2 px-4 rounded"
+            onClick={() => {
+              openModal(alert);
+              alert.source === "HOWEN" ? setOrigen("H") : setOrigen("A");
+            }}
+          >
+            Gestionar
+          </button>
+        )}
+        {(alert.estado == 9 || alert.estado == 10) && (
+          <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+            onClick={() => {
+              openViewModal(alert);
+              alert.source === "HOWEN" ? setOrigen("H") : setOrigen("A");
+            }}
+          >
+            Ver
+          </button>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+
             </table>
             <div className="flex justify-center mt-4">
               <Pagination
