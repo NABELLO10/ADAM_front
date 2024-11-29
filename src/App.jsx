@@ -30,8 +30,11 @@ import TabletoTablet from "./pages/procesos/TabletoTablet"
 import Turnos from "./pages/procesos/Turnos"
 import TableroConductor from "./pages/procesos/TableroConductor"
 import InicioConductor from "./pages/procesos/InicioConductor"
+import GestionUnificada from "./pages/procesos/GestionUnificada"
+import GestionAlertasGral from "./pages/procesos/GestionAlertasGral"
 
 import GestionAlerta from "./pages/ADAM/procesos/GestionAlerta"
+
 import AlertasTransportistas from "./pages/ADAM/procesos/AlertasTransportistas"
 
 import GestionAlarmasHowen from "./pages/HOWEN/procesos/GestionAlarmasHowen"
@@ -75,6 +78,7 @@ function App() {
               <Route path="tipo-notificacion" element={<TipoNotificacion />} />
               <Route path="correos-notificacion" element={<CorreosNotificaciones />} />
               <Route path="tablero-wialon" element={<TableroWialon />} />
+              <Route path="gestion" element={<GestionUnificada />} />
         
               <Route path="tablero-tablet" element={<TabletoTablet />} />
               <Route path="tablero-conductor" element={<TableroConductor />} />
@@ -82,6 +86,7 @@ function App() {
 
             {/* ADAM */}
               <Route path="gestionAlerta" element={<GestionAlerta />} />
+              <Route path="gestionAlertaGral" element={<GestionAlertasGral />} />
               <Route path="alertaTransportista" element={<AlertasTransportistas />} />
             
             {/* HOWEN */}

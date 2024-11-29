@@ -17,7 +17,6 @@ import {
   TableContainer,
   CircularProgress,
   Box,
-  Typography
 } from "@mui/material";
 import Descargar from "../../../components/datos/Descargar";
 import debounce from "lodash/debounce";
@@ -29,6 +28,7 @@ const UnidadesHowen = () => {
   const [busqueda, setBusqueda] = useState("");
   const [unidadesHowen, setUnidadesHowen] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingFields, setUpdatingFields] = useState({}); // Estado para rastrear campos específicos
 
   // Fetching data on load
   useEffect(() => {
@@ -63,7 +63,7 @@ const UnidadesHowen = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      const { data } = await clienteAxios.get(`/adam/unidadesAdam`, config);
+      const { data } = await clienteAxios.get(`/general/unidadesHowen`, config);
       setUnidadesHowen(data);
       setLoading(false);
     } catch (error) {
@@ -71,7 +71,8 @@ const UnidadesHowen = () => {
     }
   };
 
-  const handleUpdate = debounce(async (camion) => {
+  const handleUpdate = debounce(async (camion, field) => {
+    setUpdatingFields((prev) => ({ ...prev, [`${camion.deviceno}-${field}`]: true })); // Activar spinner para el campo específico
     try {
       const token = localStorage.getItem("token_adam");
       if (!token) {
@@ -87,7 +88,7 @@ const UnidadesHowen = () => {
       };
 
       const { data } = await clienteAxios.put(
-        `/adam/editarUnidadAdam/${camion.id}`,
+        `/general/editarUnidadHowen/${camion.deviceno}`,
         camion,
         config
       );
@@ -95,15 +96,17 @@ const UnidadesHowen = () => {
       obtenerCamiones(); // Refrescar la lista después de actualizar
     } catch (error) {
       msgError(error.response?.data?.msg || "Error al actualizar camión");
+    } finally {
+      setUpdatingFields((prev) => ({ ...prev, [`${camion.deviceno}-${field}`]: false })); // Desactivar spinner
     }
   }, 400);
 
   const handleChange = (field, value, camion) => {
     const updatedCamiones = unidadesHowen.map((c) =>
-      c.id === camion.id ? { ...c, [field]: value } : c
+      c.deviceno === camion.deviceno ? { ...c, [field]: value } : c
     );
     setUnidadesHowen(updatedCamiones);
-    handleUpdate({ ...camion, [field]: value });
+    handleUpdate({ ...camion, [field]: value }, field);
   };
 
   // Memoization for filtering
@@ -118,8 +121,7 @@ const UnidadesHowen = () => {
 
   return (
     <>
-      <Box>     
-
+      <Box>
         <div className="flex flex-col">
           <div className="flex justify-between items-end gap-4 mb-2">
             <div className="flex gap-2 w-full lg:w-3/12 border shadow px-1 text-sky-500">
@@ -140,7 +142,7 @@ const UnidadesHowen = () => {
             </div>
           </div>
 
-          {/* Tabla mejorada */}
+          {/* Tabla con spinner en campos específicos */}
           <TableContainer className="bg-white" style={{ maxHeight: 500, overflowY: 'auto' }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
@@ -156,51 +158,85 @@ const UnidadesHowen = () => {
               </TableHead>
               <TableBody>
                 {filtered.map((camion) => (
-                  <TableRow key={camion.id} className="hover:bg-gray-200 text-sm">
-                    <TableCell>{camion.nom_patente}</TableCell>
-                    <TableCell>{camion.device_id}</TableCell>
+                  <TableRow key={camion.deviceno} className="hover:bg-gray-200 text-sm">
+                    <TableCell>{camion.devicename}</TableCell>
+                    <TableCell>{camion.deviceno}</TableCell>
                     <TableCell>
-                      <FormControl fullWidth>
-                        <InputLabel>Transportista</InputLabel>
-                        <Select
-                          value={camion.id_transportista || ""}
-                          label="Transportista"
-                          onChange={(e) => handleChange("id_transportista", e.target.value, camion)}
-                        >
-                          {transportistas.map((t) => (
-                            <MenuItem key={t.id} value={t.id}>
-                              {t.nombre + " " + t.ape_paterno + " " + t.ape_materno}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      {updatingFields[`${camion.deviceno}-id_transportista`] ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <FormControl fullWidth>
+                          <InputLabel>Transportista</InputLabel>
+                          <Select
+                            value={camion.id_transportista || ""}
+                            label="Transportista"
+                            onChange={(e) =>
+                              handleChange("id_transportista", e.target.value, camion)
+                            }
+                          >
+                            {transportistas.map((t) => (
+                              <MenuItem key={t.id} value={t.id}>
+                                {t.nombre + " " + t.ape_paterno + " " + t.ape_materno}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <TextField
-                        type="date"
-                        value={camion.fec_rev_tecnica || ""}
-                        onChange={(e) => handleChange("fec_rev_tecnica", e.target.value, camion)}
-                      />
+                      {updatingFields[`${camion.deviceno}-fec_rev_tecnica`] ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <TextField
+                          type="date"
+                          value={camion.fec_rev_tecnica || ""}
+                          onChange={(e) =>
+                            handleChange("fec_rev_tecnica", e.target.value, camion)
+                          }
+                        />
+                      )}
                     </TableCell>
                     <TableCell>
-                      <TextField
-                        type="date"
-                        value={camion.fec_per_circulacion || ""}
-                        onChange={(e) => handleChange("fec_per_circulacion", e.target.value, camion)}
-                      />
+                      {updatingFields[`${camion.deviceno}-fec_per_circulacion`] ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <TextField
+                          type="date"
+                          value={camion.fec_per_circulacion || ""}
+                          onChange={(e) =>
+                            handleChange("fec_per_circulacion", e.target.value, camion)
+                          }
+                        />
+                      )}
                     </TableCell>
                     <TableCell>
-                      <TextField
-                        type="date"
-                        value={camion.fec_seguro || ""}
-                        onChange={(e) => handleChange("fec_seguro", e.target.value, camion)}
-                      />
+                      {updatingFields[`${camion.deviceno}-fec_seguro`] ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <TextField
+                          type="date"
+                          value={camion.fec_seguro || ""}
+                          onChange={(e) =>
+                            handleChange("fec_seguro", e.target.value, camion)
+                          }
+                        />
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Checkbox
-                        checked={camion.est_activo === 1}
-                        onChange={(e) => handleChange("est_activo", camion.est_activo ? 0 : 1, camion)}
-                      />
+                      {updatingFields[`${camion.deviceno}-est_activo`] ? (
+                        <CircularProgress size={24} />
+                      ) : (
+                        <Checkbox
+                          checked={camion.est_activo === 1}
+                          onChange={(e) =>
+                            handleChange(
+                              "est_activo",
+                              camion.est_activo ? 0 : 1,
+                              camion
+                            )
+                          }
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -176,7 +176,6 @@ const GestionAlarmasHowen = () => {
     };
 
     const { data } = await clienteAxios.get(`/adam/contacto/${id}`, config);
-    console.log(data);
     setContactos(data);
   };
 
@@ -324,7 +323,7 @@ const GestionAlarmasHowen = () => {
 
   const gestionarAlerta = async (id_estado) => {
     try {    
-      console.log(selectedUrl.guid)
+
       const token = localStorage.getItem("token_adam");
 
       if (!token) {
@@ -364,7 +363,7 @@ const GestionAlarmasHowen = () => {
     let filtered = alerts;
 
     if (status !== "Todas") {
-      filtered = filtered.filter((alert) => alert.est_gestionada == status.id);
+      filtered = filtered.filter((alert) => alert.estado == status.id);
     }
 
     if (term) {
@@ -642,7 +641,7 @@ const GestionAlarmasHowen = () => {
           >
             <h2 className="text-xl">{status.nom_kpi}</h2>
             <h3 className="text-3xl font-bold">
-              {alerts.filter((alert) => alert.est_gestionada == status.id).length}
+              {alerts.filter((alert) => alert.estado == status.id).length}
             </h3>
           </div>
         ))}
@@ -717,13 +716,13 @@ const GestionAlarmasHowen = () => {
                   <td className="py-2 px-4 font-semibold">
                     <span>
                       {estados.find(
-                        (status) => status.id == alert.est_gestionada
+                        (status) => status.id == alert.estado
                       )?.nom_kpi || alert.estado}
                     </span>
                   </td>
 
                   <td className="space-x-2 text-center">
-                    {alert.est_gestionada == 8 && (
+                    {alert.estado == 8 && (
                       <button
                         className="bg-blue-900 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
                         onClick={() => {

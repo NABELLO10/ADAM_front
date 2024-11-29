@@ -10,9 +10,9 @@ import { useEffect } from "react"
   const {auth, cargando} = useAuth()
   const {setCargando} = useAuth()
     
+
+
   useEffect(() => {
-
-
     if (!cargando && !auth?.id) {
       navigate('/')
     }
@@ -20,11 +20,12 @@ import { useEffect } from "react"
      if(auth.est_activo == 0){
       navigate('/')
     } 
-
   }, [auth?.id, auth.est_activo, navigate])
 
-  if (cargando) return <Spinner/>
+
+  // if (cargando) return <Spinner/>
    
+
   return (
     <>    
       <Menu2 />   

@@ -119,7 +119,7 @@ function Menu2() {
             <Sidebar />
  
              <div className="flex gap-2">
-              <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
+       {/*        <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
                 <Tooltip title="Gestion Alertas">
                   <Link to="/admin/gestionAlerta">
                     <HeadsetMicTwoToneIcon />
@@ -129,6 +129,20 @@ function Menu2() {
               <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
                 <Tooltip title="Gestion HOWEN">
                   <Link to="/admin/gestionAlertaHowen">
+                    <ScreenshotMonitorTwoToneIcon />
+                  </Link>
+                </Tooltip>
+              </div>
+              <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
+                <Tooltip title="Gestion ">
+                  <Link to="/admin/gestion">
+                    <ScreenshotMonitorTwoToneIcon />
+                  </Link>
+                </Tooltip>
+              </div> */}
+              <div className="hover:bg-red-950  bg-red-800 p-2  rounded-lg">
+                <Tooltip title="Gestion ">
+                  <Link to="/admin/gestionAlertaGral">
                     <ScreenshotMonitorTwoToneIcon />
                   </Link>
                 </Tooltip>
