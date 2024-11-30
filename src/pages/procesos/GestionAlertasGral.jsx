@@ -1080,13 +1080,12 @@ const rankingChartData = {
             {!ver ? (
               <div className="bg-gray-300 w-full">
 
-<iframe
+                  <iframe
             src={selectedUrl.url_evidencia}
             title="Evidencia"
             width="100%"
             height="100%"
           ></iframe>  
-
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
                     <span className="text-red-900 font font-semibold">
