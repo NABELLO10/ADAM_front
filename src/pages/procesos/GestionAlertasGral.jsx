@@ -123,7 +123,7 @@ const GestionAlertasGral = () => {
         config
       );
 
-      setUrlEvidencia(data);
+      setUrlEvidencia(data.downUrl);
     } catch (error) {
       console.log(error);
     }
@@ -887,6 +887,8 @@ const rankingChartData = {
     XLSX.writeFile(wb, "Reporte_de_Alertas.xlsx");
   };
 
+
+
   return (
     <div className="mx-auto relative">
     
@@ -1300,6 +1302,7 @@ const rankingChartData = {
           <DialogActions>
             {!ver ? (
               <div className="bg-gray-300 w-full">
+           
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
                     <span className="text-red-900 font font-semibold">
@@ -1350,6 +1353,8 @@ const rankingChartData = {
 
                 {urlEvidencia.length > 0 ? (
                   <table className="min-w-full text-center bg-white rounded-lg shadow-md text-sm">
+              
+
                     <thead className="bg-red-900 text-white">
                       <tr>
                         <th className="py-2 px-4">Tipo de Evidencia</th>
