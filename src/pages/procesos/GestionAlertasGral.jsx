@@ -123,6 +123,7 @@ const GestionAlertasGral = () => {
         config
       );
 
+      
       setUrlEvidencia(data.downUrl);
     } catch (error) {
       console.log(error);
@@ -868,6 +869,8 @@ const rankingChartData = {
       msgError("Ocurrió un error al enviar el correo.");
     }
   };
+
+
   
 
   const handleExportToExcel = () => {
