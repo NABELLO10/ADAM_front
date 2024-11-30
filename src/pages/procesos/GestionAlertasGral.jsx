@@ -123,8 +123,8 @@ const GestionAlertasGral = () => {
         config
       );
 
-      
-      setUrlEvidencia(data.downUrl);
+
+      setUrlEvidencia(data);
     } catch (error) {
       console.log(error);
     }
@@ -1070,20 +1070,23 @@ const rankingChartData = {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        {/*        <DialogContent>
-         <iframe
-            src={selectedUrl.url_evidencia}
-            title="Evidencia"
-            width="100%"
-            height="100%"
-          ></iframe>  
+               <DialogContent>
+       
      
-        </DialogContent> */}
+        </DialogContent> 
 
         {origen == "A" ? (
           <DialogActions>
             {!ver ? (
               <div className="bg-gray-300 w-full">
+
+<iframe
+            src={selectedUrl.url_evidencia}
+            title="Evidencia"
+            width="100%"
+            height="100%"
+          ></iframe>  
+
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
                     <span className="text-red-900 font font-semibold">
@@ -1536,7 +1539,7 @@ const rankingChartData = {
             ) : (
               <div className="w-full text-center">
                 <a
-                  href={urlEvidencia}
+                  href={urlEvidencia.downUrl}
                   className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600"
                   target="_blank"
                 >
