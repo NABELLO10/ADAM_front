@@ -34,7 +34,7 @@ import FileDownloadTwoToneIcon from "@mui/icons-material/FileDownloadTwoTone";
 import ThumbUpAltTwoToneIcon from "@mui/icons-material/ThumbUpAltTwoTone";
 import ThumbDownTwoToneIcon from "@mui/icons-material/ThumbDownTwoTone";
 
-const itemsPerPage = 10;
+const itemsPerPage = 50;
 
 ChartJS.register(
   CategoryScale,
@@ -178,13 +178,16 @@ const GestionAlertasGral = () => {
     setSelectedUrl(url);
 
     if(url.source == "ADAM"){
- obtenerInfoUnidad(url.serie);
+       obtenerInfoUnidad(url.serie);
     }else{
       obtenerInfoUnidadHowen(url.deviceno)
     }
 
    
-    obtenerEvidencia(url.guid);
+    //obtenerEvidencia(url.guid);
+
+    obtenerEvidenciaProxy(url.guid);
+
     setModalIsOpen(true);
     limpiarFormulario();
     setEstadoGEstion("");
@@ -431,7 +434,7 @@ const GestionAlertasGral = () => {
           clienteAxios.get(
             `/general/obtenerAlertasHOWEN/${startDateFilter}/${endDateFilter}`,
             config
-          ),
+          ), 
           clienteAxios.get(
             `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
             config
@@ -787,6 +790,8 @@ const rankingChartData = {
       msgError("Ocurrió un error al enviar el mensaje.");
     }
   };
+
+
   const handleSendEmail = async (contacto) => {
     try {
       const token = localStorage.getItem("token_adam");
@@ -870,8 +875,7 @@ const rankingChartData = {
     }
   };
 
-
-  
+ 
 
   const handleExportToExcel = () => {
     const dataForExcel = filteredAlerts.map((alert) => ({
@@ -890,6 +894,34 @@ const rankingChartData = {
     XLSX.writeFile(wb, "Reporte_de_Alertas.xlsx");
   };
 
+
+  const obtenerEvidenciaProxy = async (alarmGuid) => {
+    const token = localStorage.getItem("token_adam");
+    if (!token) {
+      msgError("Token no válido");
+      return;
+    }
+  
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };  
+    
+    try {
+      const { data } = await clienteAxios.get(
+        `/general/linkEvidencia/${alarmGuid}`,
+        config
+      );
+      console.log(data)
+      // Aquí actualizas tu estado con los datos obtenidos
+      setUrlEvidencia(data);
+    } catch (error) {
+      console.error("Error al obtener evidencia:", error.message);
+      msgError("No se pudo cargar la evidencia.");
+    }
+  };
+  
 
 
   return (
@@ -1085,7 +1117,9 @@ const rankingChartData = {
             title="Evidencia"
             width="100%"
             height="100%"
-          ></iframe>  
+          ></iframe>
+
+
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
                     <span className="text-red-900 font font-semibold">
@@ -1537,6 +1571,14 @@ const rankingChartData = {
               </div>
             ) : (
               <div className="w-full text-center">
+
+<iframe
+            src={selectedUrl.url_evidencia}
+            title="Evidencidfdfa"
+            width="100%"
+            height="100%"
+          ></iframe>  
+
                 <a
                   href={urlEvidencia.downUrl}
                   className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600"
