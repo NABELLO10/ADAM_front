@@ -122,8 +122,7 @@ const GestionAlertasGral = () => {
         `/general/obtenerEvidenciaUnidadHOWEN/${alarmGuid}`,
         config
       );
-
-
+            
       setUrlEvidencia(data);
     } catch (error) {
       console.log(error);
@@ -132,32 +131,32 @@ const GestionAlertasGral = () => {
 
   const gestionarAlertaHowen = async (id_estado) => {
     //try {
-      const token = localStorage.getItem("token_adam");
+    const token = localStorage.getItem("token_adam");
 
-      if (!token) {
-        msgError("Token no valido");
-        return;
-      }
+    if (!token) {
+      msgError("Token no valido");
+      return;
+    }
 
-      const config = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      };
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
-      const { data } = await clienteAxios.post(
-        `/adam/gestionarAlertaHowen/${selectedUrl.guid}`, // Incorporando el parámetro en la URL
-        {
-          id_estado,
-        },
-        config
-      );
+    const { data } = await clienteAxios.post(
+      `/adam/gestionarAlertaHowen/${selectedUrl.guid}`, // Incorporando el parámetro en la URL
+      {
+        id_estado,
+      },
+      config
+    );
 
-      setEstadoGEstion(id_estado);
-      setGestionada(true);
-      obtenerAlarmas();
-      msgOk(data.msg);
+    setEstadoGEstion(id_estado);
+    setGestionada(true);
+    obtenerAlarmas();
+    msgOk(data.msg);
     /* } catch (error) {
       msgError(error.response.data.msg);
     } */
@@ -173,20 +172,17 @@ const GestionAlertasGral = () => {
   };
 
   const openModal = (url) => {
-
     setVer(false);
     setSelectedUrl(url);
 
-    if(url.source == "ADAM"){
-       obtenerInfoUnidad(url.serie);
-    }else{
-      obtenerInfoUnidadHowen(url.deviceno)
+    if (url.source == "ADAM") {
+      obtenerInfoUnidad(url.serie);
+    } else {
+      obtenerInfoUnidadHowen(url.deviceno);
     }
 
-   
-    //obtenerEvidencia(url.guid);
-
-    obtenerEvidenciaProxy(url.guid);
+    obtenerEvidencia(url.guid);
+    // obtenerEvidenciaProxy(url.guid);
 
     setModalIsOpen(true);
     limpiarFormulario();
@@ -203,12 +199,13 @@ const GestionAlertasGral = () => {
     setVer(true);
     setSelectedUrl(url);
 
-    if(url.id_ceiba){
-      await obtenerDetalleGestion(url.id_ceiba); 
-    }else{
-      await obtenerDetalleGestion(url.guid); 
-    }
-    // Espera la obtención de los datos
+    obtenerEvidencia(url.guid);
+  /*   if (url.id_ceiba) {
+      await obtenerDetalleGestion(url.id_ceiba);
+    } else {
+      await obtenerDetalleGestion(url.guid);
+    } */
+   
     setModalIsOpen(true);
   };
 
@@ -260,7 +257,6 @@ const GestionAlertasGral = () => {
       config
     );
 
-
     if (data.id_transportista != null) {
       cargarContactos(data.id_transportista);
     } else {
@@ -285,7 +281,6 @@ const GestionAlertasGral = () => {
       `/general/infoUnidadHowen/${id}`,
       config
     );
-
 
     if (data.id_transportista != null) {
       cargarContactos(data.id_transportista);
@@ -350,7 +345,7 @@ const GestionAlertasGral = () => {
     }
   };
 
-/*   const obtenerAlarmas = async () => {
+  /*   const obtenerAlarmas = async () => {
     setLoadingTable(true); // Mostrar spinner
 
     const token = localStorage.getItem("token_adam");
@@ -409,38 +404,37 @@ const GestionAlertasGral = () => {
     }
   }; */
 
-
   const obtenerAlarmas = async () => {
     if (!startDateFilter || !endDateFilter) {
       console.error("Fechas no configuradas correctamente");
       return;
     }
-  
+
     setLoadingTable(true); // Mostrar spinner
-  
+
     const token = localStorage.getItem("token_adam");
     if (!token) return;
-  
+
     const config = {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     };
-  
+
     try {
       await trackRequest(async () => {
         const [howenResponse, adamResponse] = await Promise.all([
           clienteAxios.get(
             `/general/obtenerAlertasHOWEN/${startDateFilter}/${endDateFilter}`,
             config
-          ), 
+          ),
           clienteAxios.get(
             `/adam/alarmasCeiba/${startDateFilter}/${endDateFilter}`,
             config
           ),
         ]);
-  
+
         const howenAlerts = howenResponse.data.map((alert) => ({
           ...alert,
           source: "HOWEN",
@@ -449,12 +443,13 @@ const GestionAlertasGral = () => {
           ...alert,
           source: "ADAM",
         }));
-  
+
         const combinedAlerts = [...howenAlerts, ...adamAlerts].sort(
           (a, b) =>
-            new Date(b.inicio || b.reportTime) - new Date(a.inicio || a.reportTime)
+            new Date(b.inicio || b.reportTime) -
+            new Date(a.inicio || a.reportTime)
         );
-  
+
         setAlerts(combinedAlerts);
         filterAlerts(
           combinedAlerts,
@@ -469,7 +464,6 @@ const GestionAlertasGral = () => {
       setLoadingTable(false); // Ocultar spinner
     }
   };
-  
 
   const obtenerDetalleGestion = async (id) => {
     const token = localStorage.getItem("token_adam");
@@ -482,7 +476,7 @@ const GestionAlertasGral = () => {
       },
     };
 
-    try {
+   try {
       const { data } = await clienteAxios.get(
         `/adam/obtenerDetalleGestion/${id}`,
         config
@@ -491,7 +485,7 @@ const GestionAlertasGral = () => {
       setGestiones(data);
     } catch (error) {
       console.log(error);
-    }
+    } 
   };
 
   const gestionarAlerta = async (id_estado) => {
@@ -531,7 +525,7 @@ const GestionAlertasGral = () => {
     setDetalleGestion("");
   };
 
-/*   const filterAlerts = (alerts, status, term, transportista) => {
+  /*   const filterAlerts = (alerts, status, term, transportista) => {
     let filtered = alerts;
 
     if (status !== "Todas") {
@@ -560,36 +554,35 @@ const GestionAlertasGral = () => {
 
   const filterAlerts = (alerts, status, term, transportista) => {
     let filtered = alerts;
-  
+
     // Filtrar por estado
     if (status !== "Todas") {
       filtered = filtered.filter((alert) => alert.estado === status.id);
     }
-  
+
     // Filtrar por término de búsqueda
     if (term) {
       const termLowerCase = term.toLowerCase();
       filtered = filtered.filter(
         (alert) =>
-          (alert.unidad && alert.unidad.toLowerCase().includes(termLowerCase)) || // Filtrar por unidad
+          (alert.unidad &&
+            alert.unidad.toLowerCase().includes(termLowerCase)) || // Filtrar por unidad
           (alert.nom_tipo_alarma &&
             alert.nom_tipo_alarma.toLowerCase().includes(termLowerCase)) || // Filtrar por tipo de alarma
           (alert.deviceName &&
             alert.deviceName.toLowerCase().includes(termLowerCase)) // Filtrar por nombre del dispositivo
       );
     }
-  
+
     // Filtrar por transportista
     if (transportista && transportista.value) {
       filtered = filtered.filter(
         (alert) => alert.id_transportista === transportista.value
       );
     }
-  
+
     setFilteredAlerts(filtered);
   };
-  
-  
 
   const handleFilter = async (status) => {
     setLoadingTable(true); // Mostrar spinner antes de comenzar el filtro
@@ -626,7 +619,6 @@ const GestionAlertasGral = () => {
     filterAlerts(alerts, statusFilter, searchTerm, value); // Reaplica los filtros
     setCurrentPage(1);
   };
-  
 
   const totalPages = Math.ceil(filteredAlerts.length / itemsPerPage);
   const paginatedAlerts = filteredAlerts.slice(
@@ -666,73 +658,73 @@ const GestionAlertasGral = () => {
     ],
   };
 
-
   // Datos para el gráfico de ranking de unidades
-const unitRankingData = filteredAlerts.reduce(
-  (acc, alert) => {
-    const unitName = alert.unidad || alert.deviceName;
-    if (!acc[alert.source]) {
-      acc[alert.source] = {};
-    }
-    if (!acc[alert.source][unitName]) {
-      acc[alert.source][unitName] = 0;
-    }
-    acc[alert.source][unitName]++;
-    return acc;
-  },
-  { ADAM: {}, HOWEN: {} }
-);
-
-// Ordenar y tomar las 10 unidades con más alertas para cada fuente
-const sortedUnitsADAM = Object.keys(unitRankingData.ADAM)
-  .sort((a, b) => unitRankingData.ADAM[b] - unitRankingData.ADAM[a])
-  .slice(0, 10);
-const sortedUnitsHOWEN = Object.keys(unitRankingData.HOWEN)
-  .sort((a, b) => unitRankingData.HOWEN[b] - unitRankingData.HOWEN[a])
-  .slice(0, 10);
-
-// Combinar las unidades para evitar duplicados
-const allUnits = Array.from(new Set([...sortedUnitsADAM, ...sortedUnitsHOWEN]));
-
-// Crear los conjuntos de datos para el gráfico
-const rankingChartData = {
-  labels: allUnits,
-  datasets: [
-    {
-      label: "Cantidad de Alertas (ADAM)",
-      data: allUnits.map((unit) => unitRankingData.ADAM[unit] || 0),
-      backgroundColor: "rgba(255, 99, 132, 0.2)",
-      borderColor: "rgba(255, 99, 132, 1)",
-      borderWidth: 1,
+  const unitRankingData = filteredAlerts.reduce(
+    (acc, alert) => {
+      const unitName = alert.unidad || alert.deviceName;
+      if (!acc[alert.source]) {
+        acc[alert.source] = {};
+      }
+      if (!acc[alert.source][unitName]) {
+        acc[alert.source][unitName] = 0;
+      }
+      acc[alert.source][unitName]++;
+      return acc;
     },
-    {
-      label: "Cantidad de Alertas (HOWEN)",
-      data: allUnits.map((unit) => unitRankingData.HOWEN[unit] || 0),
-      backgroundColor: "rgba(54, 162, 235, 0.2)",
-      borderColor: "rgba(54, 162, 235, 1)",
-      borderWidth: 1,
-    },
-  ],
-};
+    { ADAM: {}, HOWEN: {} }
+  );
 
+  // Ordenar y tomar las 10 unidades con más alertas para cada fuente
+  const sortedUnitsADAM = Object.keys(unitRankingData.ADAM)
+    .sort((a, b) => unitRankingData.ADAM[b] - unitRankingData.ADAM[a])
+    .slice(0, 10);
+  const sortedUnitsHOWEN = Object.keys(unitRankingData.HOWEN)
+    .sort((a, b) => unitRankingData.HOWEN[b] - unitRankingData.HOWEN[a])
+    .slice(0, 10);
 
+  // Combinar las unidades para evitar duplicados
+  const allUnits = Array.from(
+    new Set([...sortedUnitsADAM, ...sortedUnitsHOWEN])
+  );
 
+  // Crear los conjuntos de datos para el gráfico
+  const rankingChartData = {
+    labels: allUnits,
+    datasets: [
+      {
+        label: "Cantidad de Alertas (ADAM)",
+        data: allUnits.map((unit) => unitRankingData.ADAM[unit] || 0),
+        backgroundColor: "rgba(255, 99, 132, 0.2)",
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "Cantidad de Alertas (HOWEN)",
+        data: allUnits.map((unit) => unitRankingData.HOWEN[unit] || 0),
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
 
   const handleSendWhatsApp = async (contacto) => {
     try {
       const token = localStorage.getItem("token_adam");
       if (!token) return;
-  
+
       const config = {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
-  
+
       // Guardar la gestión en el servidor
       await clienteAxios.post(
-        `/adam/detalleGestion/${selectedUrl.guid ? selectedUrl.guid : selectedUrl.id}`,
+        `/adam/detalleGestion/${
+          selectedUrl.guid ? selectedUrl.guid : selectedUrl.id
+        }`,
         {
           id_estado: estadoGestion,
           usr_gestion: auth.nom_usuario,
@@ -740,12 +732,14 @@ const rankingChartData = {
           nom_contacto: contacto.nom_contacto,
           fono_contacto: contacto.fono,
           mail_contacto: contacto.mail,
-          id_alarma_ceiba: selectedUrl.id_ceiba ? selectedUrl.id_ceiba : selectedUrl.guid,
+          id_alarma_ceiba: selectedUrl.id_ceiba
+            ? selectedUrl.id_ceiba
+            : selectedUrl.guid,
           tipo_notificacion: "WhatsApp",
         },
         config
       );
-  
+
       // Formatear la fecha a un formato legible
       const fechaFormateada = new Date(selectedUrl.inicio).toLocaleString(
         "es-ES",
@@ -758,20 +752,29 @@ const rankingChartData = {
           second: "2-digit",
         }
       );
-  
+
       let mensaje = "";
       let phone = contacto.fono.replace(/[^\d]/g, ""); // Formatear el número de teléfono
-  
+
       // Construir el mensaje dependiendo de la fuente
       if (selectedUrl.source === "ADAM") {
         mensaje = `*Alerta ADAM*\n\n*Tipo de Alerta:* ${selectedUrl.nom_tipo_alarma}\n*Unidad:* ${selectedUrl.unidad}\n*Fecha y Hora:* ${fechaFormateada}\n*ID de Alerta:* ${selectedUrl.id_ceiba}\n\n*Detalle:* ${detalleGestion}\n\nVer Evidencia: ${selectedUrl.url_evidencia}`;
-  
+
         // Acortar la URL y enviar con enlace
-        fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(selectedUrl.url_evidencia)}`)
+        fetch(
+          `https://tinyurl.com/api-create.php?url=${encodeURIComponent(
+            selectedUrl.url_evidencia
+          )}`
+        )
           .then((response) => response.text())
           .then((shortUrl) => {
-            const mensajeConShortUrl = mensaje.replace(selectedUrl.url_evidencia, shortUrl);
-            const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensajeConShortUrl)}`;
+            const mensajeConShortUrl = mensaje.replace(
+              selectedUrl.url_evidencia,
+              shortUrl
+            );
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+              mensajeConShortUrl
+            )}`;
             window.open(url, "_blank");
           })
           .catch((err) => {
@@ -780,10 +783,12 @@ const rankingChartData = {
       } else {
         // Mensaje sin enlace para otras fuentes
         mensaje = `*Alerta HOWEN*\n\n*Tipo de Alerta:* ${selectedUrl.alarmTypeValue}\n*Unidad:* ${selectedUrl.deviceName}\n*Fecha y Hora:* ${fechaFormateada}\n*ID de Alerta:* ${selectedUrl.guid}\n\n*Detalle:* ${detalleGestion}`;
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+          mensaje
+        )}`;
         window.open(url, "_blank");
       }
-  
+
       msgOk("Mensaje enviado correctamente.");
     } catch (error) {
       console.error("Error al enviar WhatsApp:", error);
@@ -791,22 +796,23 @@ const rankingChartData = {
     }
   };
 
-
   const handleSendEmail = async (contacto) => {
     try {
       const token = localStorage.getItem("token_adam");
       if (!token) return;
-  
+
       const config = {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       };
-  
+
       // Guardar la gestión en el servidor
       await clienteAxios.post(
-        `/adam/detalleGestion/${selectedUrl.guid ? selectedUrl.guid : selectedUrl.id}`,
+        `/adam/detalleGestion/${
+          selectedUrl.guid ? selectedUrl.guid : selectedUrl.id
+        }`,
         {
           id_estado: estadoGestion,
           usr_gestion: auth.nom_usuario,
@@ -814,12 +820,14 @@ const rankingChartData = {
           nom_contacto: contacto.nom_contacto,
           fono_contacto: contacto.fono,
           mail_contacto: contacto.mail,
-          id_alarma_ceiba: selectedUrl.id_ceiba ? selectedUrl.id_ceiba : selectedUrl.guid,
+          id_alarma_ceiba: selectedUrl.id_ceiba
+            ? selectedUrl.id_ceiba
+            : selectedUrl.guid,
           tipo_notificacion: "Mail",
         },
         config
       );
-  
+
       // Formatear la fecha a un formato legible
       const fechaFormateada = new Date(selectedUrl.inicio).toLocaleString(
         "es-ES",
@@ -832,9 +840,9 @@ const rankingChartData = {
           second: "2-digit",
         }
       );
-  
+
       let mensaje = "";
-  
+
       // Construir el mensaje dependiendo de la fuente
       if (selectedUrl.source === "ADAM") {
         mensaje = `
@@ -856,7 +864,7 @@ const rankingChartData = {
         <b>Detalle:</b> ${detalleGestion}
         `;
       }
-  
+
       // Enviar el correo
       await clienteAxios.post(
         `/general/enviarCorreoAlerta`, // Incorporando el parámetro en la URL
@@ -867,7 +875,7 @@ const rankingChartData = {
         },
         config
       );
-  
+
       msgOk("Correo enviado correctamente.");
     } catch (error) {
       console.error("Error al enviar correo:", error);
@@ -875,25 +883,26 @@ const rankingChartData = {
     }
   };
 
- 
-
   const handleExportToExcel = () => {
     const dataForExcel = filteredAlerts.map((alert) => ({
       Id: alert.id_ceiba || alert.guid || "N/A",
       Origen: alert.source || "N/A",
       Alarma: alert.nom_tipo_alarma || alert.alarmTypeValue || "N/A",
       Unidad: alert.unidad || alert.deviceName || "N/A",
-      "Fecha Alerta": moment(alert.inicio || alert.reportTime).format("DD-MM-YYYY HH:mm:ss"),
+      "Fecha Alerta": moment(alert.inicio || alert.reportTime).format(
+        "DD-MM-YYYY HH:mm:ss"
+      ),
       Estado:
-        estados.find((status) => status.id === alert.estado)?.nombre_estado || alert.estado || "N/A",
+        estados.find((status) => status.id === alert.estado)?.nombre_estado ||
+        alert.estado ||
+        "N/A",
     }));
-  
+
     const ws = XLSX.utils.json_to_sheet(dataForExcel);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Alertas");
     XLSX.writeFile(wb, "Reporte_de_Alertas.xlsx");
   };
-
 
   const obtenerEvidenciaProxy = async (alarmGuid) => {
     const token = localStorage.getItem("token_adam");
@@ -901,19 +910,19 @@ const rankingChartData = {
       msgError("Token no válido");
       return;
     }
-  
+
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    };  
-    
+    };
+
     try {
       const { data } = await clienteAxios.get(
         `/general/linkEvidencia/${alarmGuid}`,
         config
       );
-      console.log(data)
+ 
       // Aquí actualizas tu estado con los datos obtenidos
       setUrlEvidencia(data);
     } catch (error) {
@@ -921,12 +930,9 @@ const rankingChartData = {
       msgError("No se pudo cargar la evidencia.");
     }
   };
-  
-
 
   return (
     <div className="mx-auto relative">
-    
       <div className="flex justify-around items-center mb-1">
         {estados.map((status) => (
           <div
@@ -956,21 +962,19 @@ const rankingChartData = {
       </div>
       <div className="flex mb-2 space-x-4">
         <div className="w-5/12 bg-white">
-     
-
-<Autocomplete
-  options={transportistasUsuarios}
-  getOptionLabel={(option) => option.label}
-  value={selectedTransportista} // Controlado siempre
-  onChange={(event, value) => handleTransportistaChange(event, value)}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Filtrar por Transportista"
-      variant="outlined"
-    />
-  )}
-/>
+          <Autocomplete
+            options={transportistasUsuarios}
+            getOptionLabel={(option) => option.label}
+            value={selectedTransportista} // Controlado siempre
+            onChange={(event, value) => handleTransportistaChange(event, value)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Filtrar por Transportista"
+                variant="outlined"
+              />
+            )}
+          />
         </div>
         <input
           type="text"
@@ -1022,59 +1026,68 @@ const rankingChartData = {
                 </tr>
               </thead>
               <tbody className="text-center">
-  {paginatedAlerts.map((alert, index) => (
-    <tr
-    key={`${alert.id || alert.guid}-${index}`} // Combina ID o GUID con el índice
-    className={`hover:bg-gray-300 ${alert.source === "HOWEN" ? "bg-blue-100" : "bg-red-100"}`}
-  >
-      <td className="py-2 px-4">
-        {alert.source === "HOWEN"
-          ? alert.alarmTypeValue
-          : alert.nom_tipo_alarma}
-      </td>
-      <td className="py-2 px-4">
-        {alert.source === "HOWEN"
-          ? alert.deviceName + " | " + alert.deviceno
-          : alert.unidad}
-      </td>
-      <td className="py-2 px-4">
-        {moment(alert.inicio || alert.reportTime).format(
-          "DD-MM-YYYY HH:mm:ss"
-        )}
-      </td>
-      <td className="py-2 px-4 font-bold text-xs">
-        {estados.find((status) => status.id === alert.estado)?.nombre_estado ||
-          alert.estado}
-      </td>
-      <td className="py-2 px-4 text-xs italic">{alert.source}</td>
-      <td className="space-x-2 text-center">
-        {alert.estado == 8 && (
-          <button
-            className="bg-blue-500 hover:bg-stone-800 text-white font-semibold py-2 px-4 rounded"
-            onClick={() => {
-              openModal(alert);
-              alert.source === "HOWEN" ? setOrigen("H") : setOrigen("A");
-            }}
-          >
-            Gestionar
-          </button>
-        )}
-        {(alert.estado == 9 || alert.estado == 10) && (
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
-            onClick={() => {
-              openViewModal(alert);
-              alert.source === "HOWEN" ? setOrigen("H") : setOrigen("A");
-            }}
-          >
-            Ver
-          </button>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
-
+                {paginatedAlerts.map((alert, index) => (
+                  <tr
+                    key={`${alert.id || alert.guid}-${index}`} // Combina ID o GUID con el índice
+                    className={`hover:bg-gray-300 ${
+                      alert.source === "HOWEN" ? "bg-blue-100" : "bg-red-100"
+                    }`}
+                  >
+                    <td className="py-2 px-4">
+                      {alert.source === "HOWEN"
+                        ? alert.alarmTypeValue
+                        : alert.nom_tipo_alarma}
+                    </td>
+                    <td className="py-2 px-4">
+                      {alert.source === "HOWEN"
+                        ? alert.deviceName +
+                          " | " +
+                          alert.deviceno +
+                          " " +
+                          alert.guid
+                        : alert.unidad}
+                    </td>
+                    <td className="py-2 px-4">
+                      {moment(alert.inicio || alert.reportTime).format(
+                        "DD-MM-YYYY HH:mm:ss"
+                      )}
+                    </td>
+                    <td className="py-2 px-4 font-bold text-xs">
+                      {estados.find((status) => status.id === alert.estado)
+                        ?.nombre_estado || alert.estado}
+                    </td>
+                    <td className="py-2 px-4 text-xs italic">{alert.source}</td>
+                    <td className="space-x-2 text-center">
+                      {alert.estado == 8 && (
+                        <button
+                          className="bg-blue-500 hover:bg-stone-800 text-white font-semibold py-2 px-4 rounded"
+                          onClick={() => {
+                            openModal(alert);
+                            alert.source === "HOWEN"
+                              ? setOrigen("H")
+                              : setOrigen("A");
+                          }}
+                        >
+                          Gestionar
+                        </button>
+                      )}
+                      {(alert.estado == 9 || alert.estado == 10) && (
+                        <button
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded"
+                          onClick={() => {
+                            openViewModal(alert);
+                            alert.souce === "HOWEN"
+                              ? setOrigen("H")
+                              : setOrigen("A");
+                          }}
+                        >
+                          Ver
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
             <div className="flex justify-center mt-4">
               <Pagination
@@ -1102,23 +1115,18 @@ const rankingChartData = {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-               <DialogContent>
-       
-     
-        </DialogContent> 
+        <DialogContent></DialogContent>
 
         {origen == "A" ? (
           <DialogActions>
             {!ver ? (
               <div className="bg-gray-300 w-full">
-
-                  <iframe
-            src={selectedUrl.url_evidencia}
-            title="Evidencia"
-            width="100%"
-            height="100%"
-          ></iframe>
-
+                <iframe
+                  src={selectedUrl.url_evidencia}
+                  title="Evidencia"
+                  width="100%"
+                  height="100%"
+                ></iframe>
 
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
@@ -1313,13 +1321,21 @@ const rankingChartData = {
               </div>
             ) : (
               <div className="w-full text-center">
-                <a
-                  href={selectedUrl.url_evidencia}
-                  className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600"
-                  target="_blank"
-                >
-                  Ver Evidencia{" "}
-                </a>
+                
+                <video controls width="420">
+                              <source src={urlEvidencia.downUrl} type="video/mp4" />
+                              Tu navegador no soporta la reproducción de video.
+                            </video>
+
+            {/*       <a
+                    href={urlEvidencia.downUrl}
+                    className="bg-blue-700 text-white p-3 rounded-md hover:bg-blue-600"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Ver Evidencia
+                  </a> */}
+               
 
                 <div className="w-full text-center font-semibold my-5">
                   <span className=" text-red-700">Sin Gestiones</span>
@@ -1335,13 +1351,10 @@ const rankingChartData = {
               </div>
             )}
           </DialogActions>
-
-
         ) : (
           <DialogActions>
             {!ver ? (
               <div className="bg-gray-300 w-full">
-           
                 <div className="justify-center flex p-3">
                   <div className="gap-10 flex mb-2 items-center">
                     <span className="text-red-900 font font-semibold">
@@ -1390,46 +1403,15 @@ const rankingChartData = {
                   </div>
                 </div>
 
-                {urlEvidencia.length > 0 ? (
-                  <table className="min-w-full text-center bg-white rounded-lg shadow-md text-sm">
-              
-
-                    <thead className="bg-red-900 text-white">
-                      <tr>
-                        <th className="py-2 px-4">Tipo de Evidencia</th>
-                        <th className="py-2 px-4">Unidad</th>
-                        <th className="py-2 px-4">Fecha Inicio</th>
-                        <th className="py-2 px-4">Fecha Fin</th>
-                        <th className="py-2 px-4"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {urlEvidencia.map((evidencia, index) => (
-                        <tr key={index} className="hover:bg-gray-300">
-                          <td className="px-4 py-2">
-                            {evidencia.alarmTypeValue}
-                          </td>
-                          <td className="px-4 py-2">{evidencia.deviceName}</td>
-                          <td className="px-4 py-2">
-                            {evidencia.fileStartTime}
-                          </td>
-                          <td className="px-4 py-2">
-                            {evidencia.fileStopTime}
-                          </td>
-                          <td className="px-4 py-2">
-                            <a
-                              href={evidencia.downUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:text-blue-700"
-                            >
-                              Ver Evidencia
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                {urlEvidencia.length > 0 ? (                                  
+                      urlEvidencia.map((evidencia, index) => (  
+                          <div key={index} className=" justify-center flex">
+                            <video controls width="420">
+                              <source src={evidencia.downUrl} type="video/mp4" />
+                              Tu navegador no soporta la reproducción de video.
+                            </video>
+                          </div>
+                        ))                    
                 ) : (
                   <div className="text-center my-10 font-thin text-xl">
                     No hay evidencias disponibles.
@@ -1571,13 +1553,12 @@ const rankingChartData = {
               </div>
             ) : (
               <div className="w-full text-center">
-
-<iframe
-            src={selectedUrl.url_evidencia}
-            title="Evidencidfdfa"
-            width="100%"
-            height="100%"
-          ></iframe>  
+                <iframe
+                  src={selectedUrl.url_evidencia}
+                  title="Evidencidfdfa"
+                  width="100%"
+                  height="100%"
+                ></iframe>
 
                 <a
                   href={urlEvidencia.downUrl}
